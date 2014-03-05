@@ -1,0 +1,4 @@
+ - Write easy interface for transformations
+ - Matrix multiplication
+ 	 - Make in-place version of matrix multiplication
+ 	 - Do I want m* to check dimensions? I think for now yes
