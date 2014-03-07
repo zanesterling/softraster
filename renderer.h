@@ -2,6 +2,7 @@
 #define RENDERER
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include "surface.h"
 #include "matrix.h"

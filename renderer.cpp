@@ -1,8 +1,4 @@
 #include "renderer.h"
-#include "matrix.h"
-#include <iostream>
-#include <fstream>
-#include <string>
 
 void PutPixel32(SDL_Surface *surface, int x, int y, Uint32 color)
 {
