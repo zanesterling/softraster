@@ -2,6 +2,7 @@
 #define MATRIX
 #include <new>
 #include <stdlib.h>
+#include <iostream>
 
 class Matrix4f {
 public:

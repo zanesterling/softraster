@@ -1,5 +1,4 @@
 #include "matrix.h"
-#include <iostream>
 
 Matrix4f::Matrix4f(int w, int h) {
 	width = w;
