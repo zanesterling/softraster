@@ -29,6 +29,33 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+bool parse(int argc, char **argv) {
+    Uint32 pixelColr = SDL_MapRGB(drawSurface->format, 0, 0, 0);
+    unsigned char color[3] = {0, 0, 0};
+    Matrix4f transformMatrix;
+    Matrix4f edgeMatrix;
+    char command[64];
+    float point[4];
+    float vals[16];
+    int i;
+
+	if (argc < 2) {
+		return usage(argv);
+	}
+
+	FILE *fp = fopen(argv[1], "r");
+	while (getLine(fp, command, vals)) {
+		if (strcmp(command, "line") == 0) {
+			edgeMatrix.addCol(Vec4f(vals));
+			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
+			edgeMatrix.addCol(Vec4f(vals+3));
+			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
+		}
+	}
+
+	return true;
+}
+
 bool usage(char **argv) {
     cout << "error: no input file\n";
     cout << argv[0] << " inputfile\n";
@@ -40,35 +67,29 @@ void error(string error_message) {
 	cout << "SDL_GetError(): " << SDL_GetError() << endl;
 }
 
+// returns true if a line was gotten
 bool getLine(FILE *fin, char *command_buffer, float *val_buffer) {
-	int i, j, c;
+	int i, j, k, c;
 	char fval[16];
+	char input[1024];
 
 	// read the command
-	for (i = 0; (c = fgetc(fin)) != '\n' && c != ' '; i++) {
-		command_buffer[i] = c;
+	input[0] = '#';
+	while (input[0] == '#') fgets(input, 1024, fin);
+	if (input[0] == '\0') return false;
+	for (i = 0; i < 1024 && input[i] != ' ' && input[i] != '\n'; i++) {
+		command_buffer[i] = input[i];
 	}
 
-	// read each float value from the line
-	for (j = 0; c != '\n' && c != EOF; j++) {
-		i = 0;
-		while ((c = fgetc(fin)) == ' ');
-		while ((c = fgetc(fin)) != ' ' && c != '\n') fval[i++] = c;
-		fval[i] = '\0';
-		val_buffer[j] = atof(fval);
-	}
-}
-
-bool parse(int argc, char **argv) {
-    Uint32 pixelColr = SDL_MapRGB(drawSurface->format, 0, 0, 0);
-    unsigned char color[3] = {0, 0, 0};
-    char command[64];
-    float vals[16];
-
-	// get the screen's surface
-
-	if (argc < 2) {
-		return usage(argv);
+	// read each float value from the following line
+	input[0] = '#';
+	while (input[0] == '#') fgets(input, 1024, fin);
+	if (input[0] == '\0') return false;
+	for (i = k = 0; input[k] != '\n'; i++) {
+		while (input[k++] == ' ');
+		while (input[k] != ' ' && input[k] != '\n') fval[j++] = input[k++];
+		fval[j] = '\0';
+		val_buffer[i] = atof(fval);
 	}
 
 	return true;
