@@ -66,44 +66,59 @@ bool parse(int argc, char **argv) {
     		transformMatrix.addCol(Vec4f(0, 0, 1, 0));
     		transformMatrix.addCol(Vec4f(0, 0, 0, 1));
 		} else if (strcmp(command, "move") == 0) {
+			// perform a translation on the edge matrix
     		tempMatrix.addCol(Vec4f(1, 0, 0, 0));
     		tempMatrix.addCol(Vec4f(0, 1, 0, 0));
     		tempMatrix.addCol(Vec4f(0, 0, 1, 0));
     		tempMatrix.addCol(Vec4f(vals[0], vals[1], vals[3], 1));
-    		transformMatrix.transform(tempMatrix);
+    		transformMatrix.transform(&tempMatrix);
     		tempMatrix.clear();
 		} else if (strcmp(command, "scale") == 0) {
+			// perform a scaling on the edge matrix
     		tempMatrix.addCol(Vec4f(vals[0], 0, 0, 0));
     		tempMatrix.addCol(Vec4f(0, vals[1], 0, 0));
     		tempMatrix.addCol(Vec4f(0, 0, vals[2], 0));
     		tempMatrix.addCol(Vec4f(0, 0, 0, 1));
-    		transformMatrix.transform(tempMatrix);
+    		transformMatrix.transform(&tempMatrix);
     		tempMatrix.clear();
 		} else if (strcmp(command, "rotate-x") == 0) {
-
+			// rotate about the x-axis
 		} else if (strcmp(command, "rotate-y") == 0) {
-
+			// rotate about the y-axis
 		} else if (strcmp(command, "rotate-z") == 0) {
-
+			// rotate about the z-axis
+		} else if (strcmp(command, "screen") == 0) {
+			// set the lower-left and upper-right positions of the screen
+			cout << "screen description requested\n";
+		} else if (strcmp(command, "pixels") == 0) {
+			// set the lower-left and upper-right positions of the pixels
+			cout << "pixel description requested\n";
+		} else if (strcmp(command, "transform") == 0) {
+			// multiply the edge matrix by the transform matrix
+			edgeMatrix.transform(&transformMatrix);
+		} else if (strcmp(command, "render-parellel") == 0) {
+			// perform a parellel projection along the z-axis
+		} else if (strcmp(command, "render-perspective-cyclops") == 0) {
+			// perform a perspective rendering to a single eye
+		} else if (strcmp(command, "render-perspective-stereo") == 0) {
+			// perform a perspective rendering to each of two eyes
+		} else if (strcmp(command, "clear-edge") == 0) {
+			// clear the edge matrix
+			edgeMatrix.clear();
+		} else if (strcmp(command, "clear-pixels") == 0) {
+			// clear the screen
 		} else if (strcmp(command, "file") == 0) {
+			// save to a file
+		} else if (strcmp(command, "end") == 0) {
+			// stop parsing
+			return true;
 		}
 	}
 
 	return true;
 }
 
-bool usage(char **argv) {
-    cout << "error: no input file\n";
-    cout << argv[0] << " inputfile\n";
-    return false;
-}
-
-void error(string error_message) {
-	cout << "error: " << error_message << endl;
-	cout << "SDL_GetError(): " << SDL_GetError() << endl;
-}
-
-// returns true if a line was gotten
+// returns true if a line was read
 bool getLine(FILE *fin, char *command_buffer, float *val_buffer) {
 	int i, j, k, c;
 	char fval[16];
@@ -129,6 +144,17 @@ bool getLine(FILE *fin, char *command_buffer, float *val_buffer) {
 	}
 
 	return true;
+}
+
+bool usage(char **argv) {
+    cout << "error: no input file\n";
+    cout << argv[0] << " inputfile\n";
+    return false;
+}
+
+void error(string error_message) {
+	cout << "error: " << error_message << endl;
+	cout << "SDL_GetError(): " << SDL_GetError() << endl;
 }
 
 // set up SDL and related components
