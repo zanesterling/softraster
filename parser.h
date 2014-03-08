@@ -11,7 +11,7 @@
 int main(int, char **);
 bool usage(char **);
 void error(std::string);
-bool getLine(FILE *, char *, float *);
+bool getLine(FILE *, char *, char **, float *);
 bool parse(int, char **);
 bool init();
 void clean_up();

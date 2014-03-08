@@ -36,9 +36,15 @@ bool parse(int argc, char **argv) {
     Matrix4f edgeMatrix;
     Matrix4f tempMatrix;
     char command[64];
+    char **str_args;
+    float float_args[16];
     float point[4];
-    float vals[16];
     int i;
+
+	str_args = (char **) malloc(sizeof(char *) * 4);
+    for (i = 0; i < 4; i++) {
+		str_args[i] = (char *) calloc(64, sizeof(char));
+    }
 
     // initialize the transform matrix to be the identity matrix
     transformMatrix.addCol(Vec4f(1, 0, 0, 0));
@@ -51,12 +57,12 @@ bool parse(int argc, char **argv) {
 	}
 
 	FILE *fp = fopen(argv[1], "r");
-	while (getLine(fp, command, vals)) {
+	while (getLine(fp, command, str_args, float_args)) {
 		if (strcmp(command, "line") == 0) {
 			// add a line to the edge matrix
-			edgeMatrix.addCol(Vec4f(vals));
+			edgeMatrix.addCol(Vec4f(float_args));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
-			edgeMatrix.addCol(Vec4f(vals + 3));
+			edgeMatrix.addCol(Vec4f(float_args + 3));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
 		} else if (strcmp(command, "identity") == 0) {
 			// make the transform matrix the identity matrix
@@ -70,14 +76,14 @@ bool parse(int argc, char **argv) {
     		tempMatrix.addCol(Vec4f(1, 0, 0, 0));
     		tempMatrix.addCol(Vec4f(0, 1, 0, 0));
     		tempMatrix.addCol(Vec4f(0, 0, 1, 0));
-    		tempMatrix.addCol(Vec4f(vals[0], vals[1], vals[3], 1));
+    		tempMatrix.addCol(Vec4f(float_args[0], float_args[1], float_args[3], 1));
     		transformMatrix.transform(&tempMatrix);
     		tempMatrix.clear();
 		} else if (strcmp(command, "scale") == 0) {
 			// perform a scaling on the edge matrix
-    		tempMatrix.addCol(Vec4f(vals[0], 0, 0, 0));
-    		tempMatrix.addCol(Vec4f(0, vals[1], 0, 0));
-    		tempMatrix.addCol(Vec4f(0, 0, vals[2], 0));
+    		tempMatrix.addCol(Vec4f(float_args[0], 0, 0, 0));
+    		tempMatrix.addCol(Vec4f(0, float_args[1], 0, 0));
+    		tempMatrix.addCol(Vec4f(0, 0, float_args[2], 0));
     		tempMatrix.addCol(Vec4f(0, 0, 0, 1));
     		transformMatrix.transform(&tempMatrix);
     		tempMatrix.clear();
@@ -115,13 +121,20 @@ bool parse(int argc, char **argv) {
 		}
 	}
 
+	for (i = 0; i < 4; i++) {
+		free(str_args[i]);
+	}
+	free(str_args);
+
 	return true;
 }
 
-// returns true if a line was read
-bool getLine(FILE *fin, char *command_buffer, float *val_buffer) {
+// reads a line and puts all string args in args_buffer and all float args in
+// val_buffer. returns true if a line is read
+bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_buffer) {
+	int args_index, vals_index;
 	int i, j, k, c;
-	char fval[16];
+	char fvals[16];
 	char input[1024];
 
 	// read the command
@@ -132,15 +145,28 @@ bool getLine(FILE *fin, char *command_buffer, float *val_buffer) {
 		command_buffer[i] = input[i];
 	}
 
-	// read each float value from the following line
+	// get next non-comment line
 	input[0] = '#';
 	while (input[0] == '#') fgets(input, 1024, fin);
-	if (input[0] == '\0') return false;
-	for (i = k = 0; input[k] != '\n'; i++) {
-		while (input[k++] == ' ');
-		while (input[k] != ' ' && input[k] != '\n') fval[j++] = input[k++];
-		fval[j] = '\0';
-		val_buffer[i] = atof(fval);
+	if (input[0] == '\0') return false; 
+
+	// read each argument from the following line
+	k = 0;
+	args_index = 0;
+	vals_index = 0;
+	while (input[k] != '\n') {
+		j = 0;
+		while (input[k++] == ' '); // skip whitespace
+		while (input[k] != ' ' && input[k] != '\n') fvals[j++] = input[k++]; // read
+		fvals[j] = '\0';
+
+		// if the argument is a float, put it in vals_buffer
+		if ('0' <= fvals[0] && fvals[0] <= '9' || fvals[0] == '.') {
+			vals_buffer[vals_index++] = atof(fvals);
+		} else {
+			// otherwise put it in args_buffer
+			strcpy(args_buffer[args_index++], fvals);
+		}
 	}
 
 	return true;
