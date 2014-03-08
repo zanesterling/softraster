@@ -119,8 +119,12 @@ void drawline2m(SDL_Surface *surface, Matrix4f *p1, Matrix4f *p2, Uint32 pixel) 
 
 using namespace std;
 void savePPM(SDL_Surface *surface, string fn) {
+	savePPM(surface, fn.c_str());
+}
+
+void savePPM(SDL_Surface *surface, char *fn) {
 	FILE *fp;
-	fp = fopen(fn.c_str(), "w+");
+	fp = fopen(fn, "w+");
 
 	// header
 	fprintf(fp, "P3\n");
