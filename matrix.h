@@ -16,6 +16,7 @@ public:
 	Matrix4f operator *(const Matrix4f m);
 	const float get(const int, const int) const;
 	void set(const int, const int, const float);
+	const Vec4f *operator [](const int) const;
 	void transform(const Matrix4f*);
 	void addCol(Vec4f);
 	void clear();

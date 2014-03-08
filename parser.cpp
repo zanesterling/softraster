@@ -20,9 +20,6 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-    SDL_UpdateTexture(drawTexture, NULL, drawSurface->pixels, drawSurface->pitch);
-    SDL_RenderCopy(renderer, drawTexture, NULL, NULL);
-    SDL_RenderPresent(renderer);
     SDL_Delay(3000);
 
     clean_up();
@@ -30,8 +27,7 @@ int main(int argc, char **argv) {
 }
 
 bool parse(int argc, char **argv) {
-    Uint32 pixelColr = SDL_MapRGB(drawSurface->format, 0, 0, 0);
-    unsigned char color[3] = {0, 0, 0};
+    Uint32 pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
     Matrix4f transformMatrix;
     Matrix4f edgeMatrix;
     Matrix4f tempMatrix;
@@ -87,16 +83,16 @@ bool parse(int argc, char **argv) {
     		tempMatrix.addCol(Vec4f(0, 0, 0, 1));
     		transformMatrix.transform(&tempMatrix);
     		tempMatrix.clear();
-		} else if (strcmp(command, "rotate-x") == 0) {
+		} else if (strcmp(command, "rotate-x") == 0) { // TODO
 			// rotate about the x-axis
-		} else if (strcmp(command, "rotate-y") == 0) {
+		} else if (strcmp(command, "rotate-y") == 0) { // TODO
 			// rotate about the y-axis
-		} else if (strcmp(command, "rotate-z") == 0) {
+		} else if (strcmp(command, "rotate-z") == 0) { // TODO
 			// rotate about the z-axis
-		} else if (strcmp(command, "screen") == 0) {
+		} else if (strcmp(command, "screen") == 0) { // TODO
 			// set the lower-left and upper-right positions of the screen
 			cout << "screen description requested\n";
-		} else if (strcmp(command, "pixels") == 0) {
+		} else if (strcmp(command, "pixels") == 0) { // TODO
 			// set the lower-left and upper-right positions of the pixels
 			cout << "pixel description requested\n";
 		} else if (strcmp(command, "transform") == 0) {
@@ -104,17 +100,22 @@ bool parse(int argc, char **argv) {
 			edgeMatrix.transform(&transformMatrix);
 		} else if (strcmp(command, "render-parellel") == 0) {
 			// perform a parellel projection along the z-axis
-		} else if (strcmp(command, "render-perspective-cyclops") == 0) {
+			drawEdges(drawSurface, &edgeMatrix, pixelColor);
+			drawToScreen();
+		} else if (strcmp(command, "render-perspective-cyclops") == 0) { // TODO
 			// perform a perspective rendering to a single eye
-		} else if (strcmp(command, "render-perspective-stereo") == 0) {
+		} else if (strcmp(command, "render-perspective-stereo") == 0) { // TODO
 			// perform a perspective rendering to each of two eyes
 		} else if (strcmp(command, "clear-edge") == 0) {
 			// clear the edge matrix
 			edgeMatrix.clear();
 		} else if (strcmp(command, "clear-pixels") == 0) {
 			// clear the screen
+			clear(drawSurface);
+			drawToScreen();
 		} else if (strcmp(command, "file") == 0) {
 			// save to a file
+			savePPM(drawSurface, str_args[0]);
 		} else if (strcmp(command, "end") == 0) {
 			// stop parsing
 			return true;
@@ -127,6 +128,12 @@ bool parse(int argc, char **argv) {
 	free(str_args);
 
 	return true;
+}
+
+void drawToScreen() {
+    SDL_UpdateTexture(drawTexture, NULL, drawSurface->pixels, drawSurface->pitch);
+    SDL_RenderCopy(renderer, drawTexture, NULL, NULL);
+    SDL_RenderPresent(renderer);
 }
 
 // reads a line and puts all string args in args_buffer and all float args in

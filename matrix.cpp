@@ -9,6 +9,7 @@ Matrix4f::~Matrix4f() {
 
 void Matrix4f::addCol(Vec4f v) {
 	this->_cols.push_back(v);
+	this->width++;
 }
 
 const float Matrix4f::get(const int x, const int y) const {
@@ -20,24 +21,8 @@ void Matrix4f::set(const int x, const int y, const float f) {
 	_cols[x][y] = f;
 }
 
-// this mallocs but never removes. remember to destruct everything!
-Matrix4f Matrix4f::operator *(const Matrix4f m) {
-	if (width != 4) {
-		std::cout << "multiplying incompatible matrices";
-	}
-
-	Matrix4f result;
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < m.width; j++) {
-			float val = 0;
-			for (int k = 0; k < 4; k++) {
-				val += get(k, i) * m.get(j, k);
-			}
-			result.set(j, i, val);
-		}
-	}
-
-	return result;
+const Vec4f *Matrix4f::operator [](const int i) const {
+	return &(this->_cols[i]);
 }
 
 void Matrix4f::transform(const Matrix4f *matrix) {
