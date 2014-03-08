@@ -1,14 +1,20 @@
-parser: parser.cpp renderer.o matrix.o
-	g++ -o parser parser.cpp renderer.o matrix.o -I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
+GCC=g++
+FLAGS=-I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
 
-demo: demo.cpp renderer.o matrix.o
-	g++ -o demo demo.cpp renderer.o matrix.o -I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
+parser: parser.cpp renderer.o matrix.o transform.o
+	$(GCC) -o parser parser.cpp renderer.o matrix.o transform.o $(FLAGS)
+
+demo: demo.cpp renderer.o matrix.o transform.o
+	$(GCC) -o demo demo.cpp renderer.o matrix.o $(FLAGS)
 
 renderer.o: renderer.cpp renderer.h
-	g++ -c renderer.cpp -I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
+	$(GCC) -c renderer.cpp $(FLAGS)
 
 matrix.o: matrix.cpp matrix.h
-	g++ -c matrix.cpp -I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
+	$(GCC) -c matrix.cpp $(FLAGS)
+
+transform.o: transform.cpp transform.h
+	$(GCC) -c transform.cpp $(FLAGS)
 
 run: parser
 	./parser

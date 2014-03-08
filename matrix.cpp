@@ -27,18 +27,23 @@ const Vec4f *Matrix4f::operator [](const int i) const {
 
 void Matrix4f::transform(const Matrix4f *matrix) {
 	for (int k = 0; k < width; k++) {
+		Vec4f newVec(0, 0, 0, 0);
 		for (int i = 0; i < 4; i++) {
 			float val = 0;
 			for (int j = 0; j < matrix->width; j++) {
 				val += get(k, j) * matrix->get(j, i);
 			}
-			set(k, i, val);
+			newVec[i] = val;
+		}
+		for (int i = 0; i < 4; i++) {
+			set(k, i, newVec[i]);
 		}
 	}
 }
 
 void Matrix4f::clear() {
 	 _cols.clear();
+	 width = 0;
 }
 
 Vec4f::Vec4f(const float data[]) {

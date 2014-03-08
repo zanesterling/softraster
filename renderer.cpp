@@ -37,6 +37,11 @@ void drawLine4i(SDL_Surface *surface, int x1, int y1, int x2, int y2,
 	int temp;
 	int i;
 
+	if (x1 < 0 || surface->w <= x1 || y1 < 0 || surface->h <= y1 ||
+	    x2 < 0 || surface->w <= x2 || y2 < 0 || surface->h <= y2) {
+		return;
+	}
+
 	dx = x2 - x1;
 	dy = y2 - y1;
 	// absolute values

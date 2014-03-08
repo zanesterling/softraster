@@ -5,8 +5,10 @@
 #include <string>
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include "renderer.h"
 #include "matrix.h"
+#include "transform.h"
 
 int main(int, char **);
 bool parse(int, char **);
@@ -16,4 +18,5 @@ bool usage(char **);
 void error(std::string);
 bool init();
 void clean_up();
+
 #endif

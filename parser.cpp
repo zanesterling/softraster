@@ -8,6 +8,7 @@ SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
 SDL_Surface *drawSurface = NULL;
+Matrix4f edgeMatrix;
 
 int main(int argc, char **argv) {
     if (argc != 2)
@@ -24,17 +25,40 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-    SDL_Delay(3000);
+	Uint32 color = SDL_MapRGB(drawSurface->format, 0, 0xff, 0);
+	for (int i = 0; i < 1000; i++) {
+		clear(drawSurface);
+		translate(&edgeMatrix, -250, -250, 0);
+		rotatex(&edgeMatrix, 0.02);
+		rotatey(&edgeMatrix, 0.02);
+		translate(&edgeMatrix, 250, 250, 0);
+		drawEdges(drawSurface, &edgeMatrix, color);
+		drawToScreen();
+		SDL_Delay(10);
+	}
+    //SDL_Delay(4000);
 
     clean_up();
     return 0;
 }
 
+void printMatrix(Matrix4f *matrix) {
+	for (int j = 0; j < 4; j++) {
+		for (int i = 0; i < matrix->width; i++) {
+			cout << matrix->get(i, j) << " "; 
+		}
+		cout << endl;
+	}
+}
+
+// degrees to radians
+float dtor(float degrees) {
+	return degrees * M_PI / 180;
+}
+
 bool parse(int argc, char **argv) {
     Uint32 pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
     Matrix4f transformMatrix;
-    Matrix4f edgeMatrix;
-    Matrix4f tempMatrix;
     char command[64];
     char **str_args;
     float float_args[16];
@@ -66,10 +90,6 @@ bool parse(int argc, char **argv) {
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
 			edgeMatrix.addCol(Vec4f(float_args + 3));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
-			cout << edgeMatrix.get(0, 0) << " " << edgeMatrix.get(0, 1) << " ";
-			cout << edgeMatrix.get(0, 2) << " " << edgeMatrix.get(0, 3) << endl;
-			cout << edgeMatrix.get(1, 0) << " " << edgeMatrix.get(1, 1) << " ";
-			cout << edgeMatrix.get(1, 2) << " " << edgeMatrix.get(1, 3) << endl;
 		} else if (strcmp(command, "identity") == 0) {
 			// make the transform matrix the identity matrix
 			transformMatrix.clear();
@@ -77,28 +97,22 @@ bool parse(int argc, char **argv) {
     		transformMatrix.addCol(Vec4f(0, 1, 0, 0));
     		transformMatrix.addCol(Vec4f(0, 0, 1, 0));
     		transformMatrix.addCol(Vec4f(0, 0, 0, 1));
+    		printMatrix(&transformMatrix);
 		} else if (strcmp(command, "move") == 0) {
 			// perform a translation on the edge matrix
-    		tempMatrix.addCol(Vec4f(1, 0, 0, 0));
-    		tempMatrix.addCol(Vec4f(0, 1, 0, 0));
-    		tempMatrix.addCol(Vec4f(0, 0, 1, 0));
-    		tempMatrix.addCol(Vec4f(float_args[0], float_args[1], float_args[3], 1));
-    		transformMatrix.transform(&tempMatrix);
-    		tempMatrix.clear();
+			translate(&transformMatrix, float_args[0], float_args[1], float_args[2]);
 		} else if (strcmp(command, "scale") == 0) {
 			// perform a scaling on the edge matrix
-    		tempMatrix.addCol(Vec4f(float_args[0], 0, 0, 0));
-    		tempMatrix.addCol(Vec4f(0, float_args[1], 0, 0));
-    		tempMatrix.addCol(Vec4f(0, 0, float_args[2], 0));
-    		tempMatrix.addCol(Vec4f(0, 0, 0, 1));
-    		transformMatrix.transform(&tempMatrix);
-    		tempMatrix.clear();
-		} else if (strcmp(command, "rotate-x") == 0) { // TODO
+			scale(&transformMatrix, float_args[0], float_args[1], float_args[2]);
+		} else if (strcmp(command, "rotate-x") == 0) {
 			// rotate about the x-axis
-		} else if (strcmp(command, "rotate-y") == 0) { // TODO
+			rotatex(&transformMatrix, dtor(float_args[0]));
+		} else if (strcmp(command, "rotate-y") == 0) {
 			// rotate about the y-axis
-		} else if (strcmp(command, "rotate-z") == 0) { // TODO
+			rotatey(&transformMatrix, dtor(float_args[0]));
+		} else if (strcmp(command, "rotate-z") == 0) {
 			// rotate about the z-axis
+			rotatez(&transformMatrix, dtor(float_args[0]));
 		} else if (strcmp(command, "screen") == 0) { // TODO
 			// set the lower-left and upper-right positions of the screen
 			cout << "screen description requested\n";
@@ -176,7 +190,8 @@ bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_bu
 		fvals[j] = '\0';
 
 		// if the argument is a float, put it in vals_buffer
-		if ('0' <= fvals[0] && fvals[0] <= '9' || fvals[0] == '.') {
+		if ('0' <= fvals[0] && fvals[0] <= '9' || fvals[0] == '.' ||
+			fvals[0] == '-') {
 			vals_buffer[vals_index++] = atof(fvals);
 		} else {
 			// otherwise put it in args_buffer
