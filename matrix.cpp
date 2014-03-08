@@ -40,7 +40,7 @@ Matrix4f Matrix4f::operator *(const Matrix4f m) {
 	return result;
 }
 
-void Matrix4f::transform(Matrix4f *matrix) {
+void Matrix4f::transform(const Matrix4f *matrix) {
 	for (int i = 0; i < 4; i++) {
 		float val = 0;
 		for (int j = 0; j < matrix->width; j++) {
