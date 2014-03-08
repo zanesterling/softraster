@@ -1,7 +1,6 @@
 #include "renderer.h"
 
-void PutPixel32(SDL_Surface *surface, int x, int y, Uint32 color)
-{
+void PutPixel32(SDL_Surface *surface, const int x, const int y, const Uint32 color) {
 	if (SDL_MUSTLOCK(surface))
 		SDL_LockSurface(surface);
 	PutPixel32_nolock(surface, x, y, color);
@@ -9,14 +8,14 @@ void PutPixel32(SDL_Surface *surface, int x, int y, Uint32 color)
 		SDL_UnlockSurface(surface);
 }
 
-void PutPixel32_nolock(SDL_Surface *surface, int x, int y, Uint32 color)
-{
+void PutPixel32_nolock(SDL_Surface *surface, const int x, const int y,
+                       const Uint32 color) {
 	Uint8 * pixel = (Uint8*)surface->pixels;
 	pixel += (y * surface->pitch) + (x * sizeof(Uint32));
 	*((Uint32*)pixel) = color;
 }
 
-Uint32 GetPixel32(SDL_Surface *surface, int x, int y) {
+Uint32 GetPixel32(SDL_Surface *surface, const int x, const int y) {
 	if (SDL_MUSTLOCK(surface))
 		SDL_LockSurface(surface);
 	Uint32 pixel = GetPixel32_nolock(surface, x, y);
@@ -25,13 +24,14 @@ Uint32 GetPixel32(SDL_Surface *surface, int x, int y) {
 	return pixel;
 }
 
-Uint32 GetPixel32_nolock(SDL_Surface *surface, int x, int y) {
+Uint32 GetPixel32_nolock(SDL_Surface *surface, const int x, const int y) {
 	Uint8 *pixel = (Uint8*)surface->pixels;
 	pixel += (y * surface->pitch) + (x * sizeof(Uint32));
 	return *((Uint32*)pixel);
 }
 
-void drawLine4i(SDL_Surface *surface, int x1, int y1, int x2, int y2, Uint32 pixel) {
+void drawLine4i(SDL_Surface *surface, int x1, int y1, int x2, int y2,
+                const Uint32 pixel) {
 	int dx, dy;
 	int adx, ady;
 	int temp;
@@ -71,7 +71,8 @@ void drawLine4i(SDL_Surface *surface, int x1, int y1, int x2, int y2, Uint32 pix
 	}
 }
 
-void drawLine2m(SDL_Surface *surface, Matrix4f *p1, Matrix4f *p2, Uint32 pixel) {
+void drawLine2m(SDL_Surface *surface, const Matrix4f *p1, const Matrix4f *p2,
+                const Uint32 pixel) {
 	int x1, x2;
 	int y1, y2;
 
@@ -83,11 +84,12 @@ void drawLine2m(SDL_Surface *surface, Matrix4f *p1, Matrix4f *p2, Uint32 pixel) 
 	drawLine4i(surface, x1, y1, x2, y2, pixel);
 }
 
-void drawLine2v(SDL_Surface *surface, Vec4f *v1, Vec4f *v2, Uint32 pixel) {
+void drawLine2v(SDL_Surface *surface, const Vec4f *v1, const Vec4f *v2,
+                const Uint32 pixel) {
 	drawLine4i(surface, (*v1)[0], (*v1)[1], (*v2)[0], (*v2)[1], pixel);
 }
 
-void drawEdges(SDL_Surface *surface, Matrix4f *edgeMatrix, Uint32 pixel) {
+void drawEdges(SDL_Surface *surface, const Matrix4f *edgeMatrix, const Uint32 pixel) {
 	for (int i = 0; i < edgeMatrix->width / 2; i++) {
 		drawLine2v(surface, (*edgeMatrix)[i*2], (*edgeMatrix)[i*2 + 1], pixel);
 	}
@@ -99,18 +101,18 @@ void clear(SDL_Surface *surface) {
 }
 
 // fills the surface with $color
-void clear(SDL_Surface *surface, Uint32 color) {
+void clear(SDL_Surface *surface, const Uint32 color) {
 	SDL_FillRect(surface, NULL, color);
 }
 
 using namespace std;
 // save the surface to a ppm file
-void savePPM(SDL_Surface *surface, string fn) {
+void savePPM(SDL_Surface *surface, const string fn) {
 	savePPM(surface, fn.c_str());
 }
 
 // save the surface to a ppm file
-void savePPM(SDL_Surface *surface, char *fn) {
+void savePPM(SDL_Surface *surface, const char *fn) {
 	FILE *fp;
 	fp = fopen(fn, "w+");
 

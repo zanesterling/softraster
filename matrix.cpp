@@ -26,12 +26,14 @@ const Vec4f *Matrix4f::operator [](const int i) const {
 }
 
 void Matrix4f::transform(const Matrix4f *matrix) {
-	for (int i = 0; i < 4; i++) {
-		float val = 0;
-		for (int j = 0; j < matrix->width; j++) {
-			val += get(0, j) * matrix->get(j, i);
+	for (int k = 0; k < width; k++) {
+		for (int i = 0; i < 4; i++) {
+			float val = 0;
+			for (int j = 0; j < matrix->width; j++) {
+				val += get(k, j) * matrix->get(j, i);
+			}
+			set(k, i, val);
 		}
-		set(0, i, val);
 	}
 }
 

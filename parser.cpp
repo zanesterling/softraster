@@ -13,8 +13,12 @@ int main(int argc, char **argv) {
     if (argc != 2)
         return usage(argv);
 
+	cout << "initializing... ";
 	init();
+	cout << "initialized\n";
 
+	
+	cout << "parsing\n";
 	if (!parse(argc, argv)) {
 		printf("error encountered while parsing\n");
 		return 1;
@@ -140,7 +144,7 @@ void drawToScreen() {
 // val_buffer. returns true if a line is read
 bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_buffer) {
 	int args_index, vals_index;
-	int i, j, k, c;
+	int i, j, c;
 	char fvals[16];
 	char input[1024];
 
@@ -152,19 +156,13 @@ bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_bu
 		command_buffer[i] = input[i];
 	}
 
-	// get next non-comment line
-	input[0] = '#';
-	while (input[0] == '#') fgets(input, 1024, fin);
-	if (input[0] == '\0') return false; 
-
-	// read each argument from the following line
-	k = 0;
+	// read each argument from the line
 	args_index = 0;
 	vals_index = 0;
-	while (input[k] != '\n') {
+	while (input[i] != '\n') {
 		j = 0;
-		while (input[k++] == ' '); // skip whitespace
-		while (input[k] != ' ' && input[k] != '\n') fvals[j++] = input[k++]; // read
+		while (input[i++] == ' '); // skip whitespace
+		while (input[i] != ' ' && input[i] != '\n') fvals[j++] = input[i++]; // read
 		fvals[j] = '\0';
 
 		// if the argument is a float, put it in vals_buffer
@@ -224,6 +222,7 @@ bool init() {
 		return false;
     }
 
+    SDL_RenderClear(renderer);
     return true;
 }
 
