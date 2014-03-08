@@ -14,7 +14,7 @@ public:
 	Matrix4f();
 	~Matrix4f();
 	Matrix4f operator *(const Matrix4f m);
-	float get(const int, const int);
+	const float get(const int, const int) const;
 	void set(const int, const int, const float);
 	void transform(const Matrix4f*);
 	void addCol(Vec4f);

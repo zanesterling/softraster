@@ -11,7 +11,7 @@ void Matrix4f::addCol(Vec4f v) {
 	this->_cols.push_back(v);
 }
 
-float Matrix4f::get(const int x, const int y) {
+const float Matrix4f::get(const int x, const int y) const {
 	return _cols[x][y];
 }
 
