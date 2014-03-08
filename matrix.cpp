@@ -11,18 +11,17 @@ void Matrix4f::addCol(Vec4f v) {
 	this->_cols.push_back(v);
 }
 
-float Matrix4f::get(int x, int y) {
+float Matrix4f::get(const int x, const int y) {
 	return _cols[x][y];
 }
 
 // note: does not check x and y
-void Matrix4f::set(int x, int y, float f) {
+void Matrix4f::set(const int x, const int y, const float f) {
 	_cols[x][y] = f;
 }
 
 // this mallocs but never removes. remember to destruct everything!
-Matrix4f Matrix4f::operator *(Matrix4f m) {
-	// TODO make in-place version
+Matrix4f Matrix4f::operator *(const Matrix4f m) {
 	if (width != 4) {
 		std::cout << "multiplying incompatible matrices";
 	}
