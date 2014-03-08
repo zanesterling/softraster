@@ -90,6 +90,7 @@ void drawLine2v(SDL_Surface *surface, const Vec4f *v1, const Vec4f *v2,
 }
 
 void drawEdges(SDL_Surface *surface, const Matrix4f *edgeMatrix, const Uint32 pixel) {
+	using namespace std;
 	for (int i = 0; i < edgeMatrix->width / 2; i++) {
 		drawLine2v(surface, (*edgeMatrix)[i*2], (*edgeMatrix)[i*2 + 1], pixel);
 	}

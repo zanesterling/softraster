@@ -17,8 +17,8 @@ int main(int argc, char **argv) {
 	init();
 	cout << "initialized\n";
 
-	
-	cout << "parsing\n";
+
+	cout << "ready to parse... ";
 	if (!parse(argc, argv)) {
 		printf("error encountered while parsing\n");
 		return 1;
@@ -57,13 +57,19 @@ bool parse(int argc, char **argv) {
 	}
 
 	FILE *fp = fopen(argv[1], "r");
+	cout << "parsing\n";
 	while (getLine(fp, command, str_args, float_args)) {
+		cout << command << endl;
 		if (strcmp(command, "line") == 0) {
 			// add a line to the edge matrix
 			edgeMatrix.addCol(Vec4f(float_args));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
 			edgeMatrix.addCol(Vec4f(float_args + 3));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
+			cout << edgeMatrix.get(0, 0) << " " << edgeMatrix.get(0, 1) << " ";
+			cout << edgeMatrix.get(0, 2) << " " << edgeMatrix.get(0, 3) << endl;
+			cout << edgeMatrix.get(1, 0) << " " << edgeMatrix.get(1, 1) << " ";
+			cout << edgeMatrix.get(1, 2) << " " << edgeMatrix.get(1, 3) << endl;
 		} else if (strcmp(command, "identity") == 0) {
 			// make the transform matrix the identity matrix
 			transformMatrix.clear();
@@ -102,7 +108,7 @@ bool parse(int argc, char **argv) {
 		} else if (strcmp(command, "transform") == 0) {
 			// multiply the edge matrix by the transform matrix
 			edgeMatrix.transform(&transformMatrix);
-		} else if (strcmp(command, "render-parellel") == 0) {
+		} else if (strcmp(command, "render-parallel") == 0) {
 			// perform a parellel projection along the z-axis
 			drawEdges(drawSurface, &edgeMatrix, pixelColor);
 			drawToScreen();
@@ -123,6 +129,9 @@ bool parse(int argc, char **argv) {
 		} else if (strcmp(command, "end") == 0) {
 			// stop parsing
 			return true;
+		} else {
+			error("unknown command");
+			return false;
 		}
 	}
 
@@ -155,13 +164,14 @@ bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_bu
 	for (i = 0; i < 1024 && input[i] != ' ' && input[i] != '\n'; i++) {
 		command_buffer[i] = input[i];
 	}
+	command_buffer[i] = '\0';
 
 	// read each argument from the line
 	args_index = 0;
 	vals_index = 0;
 	while (input[i] != '\n') {
 		j = 0;
-		while (input[i++] == ' '); // skip whitespace
+		while (input[i] == ' ') i++; // skip whitespace
 		while (input[i] != ' ' && input[i] != '\n') fvals[j++] = input[i++]; // read
 		fvals[j] = '\0';
 
