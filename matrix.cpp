@@ -51,12 +51,21 @@ void Matrix4f::transform(Matrix4f *matrix) {
 	}
 }
 
+void Matrix4f::clear() {
+	 _cols.clear();
+}
+
 Vec4f::Vec4f(const float data[]) {
 	memcpy(this->_data, data, sizeof(float)*4);
 }
 
-Vec4f::~Vec4f() {
-
+Vec4f::Vec4f(const float f1, const float f2, const float f3, const float f4) {
+	_data[0] = f1;
+	_data[1] = f2;
+	_data[2] = f3;
+	_data[3] = f4;
+	// I wish this worked Q_Q
+	//memcpy(this->_data, &f1, sizeof(float)*4);
 }
 
 float Vec4f::operator [](const int i) const {

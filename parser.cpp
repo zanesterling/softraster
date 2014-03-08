@@ -34,10 +34,17 @@ bool parse(int argc, char **argv) {
     unsigned char color[3] = {0, 0, 0};
     Matrix4f transformMatrix;
     Matrix4f edgeMatrix;
+    Matrix4f tempMatrix;
     char command[64];
     float point[4];
     float vals[16];
     int i;
+
+    // initialize the transform matrix to be the identity matrix
+    transformMatrix.addCol(Vec4f(1, 0, 0, 0));
+    transformMatrix.addCol(Vec4f(0, 1, 0, 0));
+    transformMatrix.addCol(Vec4f(0, 0, 1, 0));
+    transformMatrix.addCol(Vec4f(0, 0, 0, 1));
 
 	if (argc < 2) {
 		return usage(argv);
@@ -46,10 +53,39 @@ bool parse(int argc, char **argv) {
 	FILE *fp = fopen(argv[1], "r");
 	while (getLine(fp, command, vals)) {
 		if (strcmp(command, "line") == 0) {
+			// add a line to the edge matrix
 			edgeMatrix.addCol(Vec4f(vals));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
-			edgeMatrix.addCol(Vec4f(vals+3));
+			edgeMatrix.addCol(Vec4f(vals + 3));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
+		} else if (strcmp(command, "identity") == 0) {
+			// make the transform matrix the identity matrix
+			transformMatrix.clear();
+    		transformMatrix.addCol(Vec4f(1, 0, 0, 0));
+    		transformMatrix.addCol(Vec4f(0, 1, 0, 0));
+    		transformMatrix.addCol(Vec4f(0, 0, 1, 0));
+    		transformMatrix.addCol(Vec4f(0, 0, 0, 1));
+		} else if (strcmp(command, "move") == 0) {
+    		tempMatrix.addCol(Vec4f(1, 0, 0, 0));
+    		tempMatrix.addCol(Vec4f(0, 1, 0, 0));
+    		tempMatrix.addCol(Vec4f(0, 0, 1, 0));
+    		tempMatrix.addCol(Vec4f(vals[0], vals[1], vals[3], 1));
+    		transformMatrix.transform(tempMatrix);
+    		tempMatrix.clear();
+		} else if (strcmp(command, "scale") == 0) {
+    		tempMatrix.addCol(Vec4f(vals[0], 0, 0, 0));
+    		tempMatrix.addCol(Vec4f(0, vals[1], 0, 0));
+    		tempMatrix.addCol(Vec4f(0, 0, vals[2], 0));
+    		tempMatrix.addCol(Vec4f(0, 0, 0, 1));
+    		transformMatrix.transform(tempMatrix);
+    		tempMatrix.clear();
+		} else if (strcmp(command, "rotate-x") == 0) {
+
+		} else if (strcmp(command, "rotate-y") == 0) {
+
+		} else if (strcmp(command, "rotate-z") == 0) {
+
+		} else if (strcmp(command, "file") == 0) {
 		}
 	}
 
