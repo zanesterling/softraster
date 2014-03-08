@@ -13,5 +13,10 @@ renderer.o: renderer.cpp renderer.h
 matrix.o: matrix.cpp matrix.h
 	g++ -c matrix.cpp -I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
 
-run: demo
-	./demo
+run: parser
+	./parser
+
+clean:
+	rm -f *.o
+	rm -f demo
+	rm -f parser
