@@ -26,7 +26,14 @@ int main(int argc, char **argv) {
 	}
 
 	Uint32 color = SDL_MapRGB(drawSurface->format, 0, 0xff, 0);
-	for (int i = 0; i < 1000; i++) {
+	SDL_Event e;
+	bool quit = false;
+	while (!quit) {
+		while (SDL_PollEvent(&e) != 0) {
+			if (e.type == SDL_QUIT) {
+				quit = true;
+			}
+		}
 		clear(drawSurface);
 		translate(&edgeMatrix, -250, -250, 0);
 		rotatex(&edgeMatrix, 0.02);
@@ -83,7 +90,7 @@ bool parse(int argc, char **argv) {
 	FILE *fp = fopen(argv[1], "r");
 	cout << "parsing\n";
 	while (getLine(fp, command, str_args, float_args)) {
-		cout << command << endl;
+		// cout << command << endl;
 		if (strcmp(command, "line") == 0) {
 			// add a line to the edge matrix
 			edgeMatrix.addCol(Vec4f(float_args));
