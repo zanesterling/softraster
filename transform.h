@@ -9,5 +9,6 @@ void scale(Matrix4f *, float, float, float);
 void rotatex(Matrix4f *, float);
 void rotatey(Matrix4f *, float);
 void rotatez(Matrix4f *, float);
+void screenTransform(Matrix4f *, int, int, int, int, int, int);
 
 #endif

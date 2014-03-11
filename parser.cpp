@@ -3,6 +3,7 @@
 using namespace std;
 
 int pix_width, pix_height;
+int xleft, ybot, xright, ytop;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
@@ -29,12 +30,22 @@ int main(int argc, char **argv) {
 				quit = true;
 			}
 		}
+
+		// clear for the next frame
 		clear(drawSurface);
+
+		// rotate the model slightly around its center
 		translate(&edgeMatrix, -250, -250, 0);
 		rotatex(&edgeMatrix, 0.02);
 		rotatey(&edgeMatrix, 0.02);
 		translate(&edgeMatrix, 250, 250, 0);
-		drawEdges(drawSurface, &edgeMatrix, color);
+
+		Matrix4f finalEdges;
+		for (int i = 0; i < edgeMatrix.width; i++) {
+			finalEdges.addCol(*(edgeMatrix[i]));
+		}
+		screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
+		drawEdges(drawSurface, &finalEdges, pixelColor);
 		drawToScreen();
 		SDL_Delay(10);
 	}
@@ -84,7 +95,7 @@ bool parse(int argc, char **argv) {
 	FILE *fp = fopen(argv[1], "r");
 	cout << "parsing\n";
 	while (getLine(fp, command, str_args, float_args)) {
-		cout << command << endl;
+		// cout << command << endl;
 		if (strcmp(command, "line") == 0) {
 			// add a line to the edge matrix
 			edgeMatrix.addCol(Vec4f(float_args));
@@ -116,9 +127,12 @@ bool parse(int argc, char **argv) {
 		} else if (strcmp(command, "rotate-z") == 0) {
 			// rotate about the z-axis
 			rotatez(&transformMatrix, dtor(float_args[0]));
-		} else if (strcmp(command, "screen") == 0) { // TODO
+		} else if (strcmp(command, "screen") == 0) {
 			// set the lower-left and upper-right positions of the screen
-			cout << "screen description requested\n";
+			xleft = float_args[0];
+			ybot = float_args[1];
+			xright = float_args[2];
+			ytop = float_args[3];
 		} else if (strcmp(command, "pixels") == 0) {
 			// initialize the surface
 			if (!init(float_args[0], float_args[1])) {
@@ -131,7 +145,13 @@ bool parse(int argc, char **argv) {
 			edgeMatrix.transform(&transformMatrix);
 		} else if (strcmp(command, "render-parallel") == 0) {
 			// perform a parellel projection along the z-axis
-			drawEdges(drawSurface, &edgeMatrix, pixelColor);
+			Matrix4f finalEdges;
+			for (i = 0; i < edgeMatrix.width; i++) {
+				finalEdges.addCol(*(edgeMatrix[i]));
+			}
+			screenTransform(&finalEdges, pix_width, pix_height,
+			                xleft, ybot, xright, ytop);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
 			drawToScreen();
 		} else if (strcmp(command, "render-perspective-cyclops") == 0) { // TODO
 			// perform a perspective rendering to a single eye
@@ -151,7 +171,7 @@ bool parse(int argc, char **argv) {
 			// stop parsing
 			return true;
 		} else {
-			error("unknown command");
+			error("unknown command: " + std::string(command));
 			return false;
 		}
 	}
