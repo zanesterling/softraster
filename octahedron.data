@@ -1,0 +1,22 @@
+# octohedron
+identity
+screen -3 -3 3 3
+pixels  500 500
+line -.5 -.5 0 .5 -.5 0
+line .5 -.5 0 .5 .5 0
+line .5 .5 0 -.5 .5 0
+line -.5 .5 0 -.5 -.5 0
+line -.5 -.5 0 0 0 .707
+line .5 -.5 0 0 0 .707
+line .5 .5 0 0 0 .707
+line -.5 .5 0 0 0 .707
+line -.5 -.5 0 0 0 -.707
+line .5 -.5 0 0 0 -.707
+line .5 .5 0 0 0 -.707
+line -.5 .5 0 0 0 -.707
+rotate-x -70
+rotate-y 30
+transform
+render-parallel
+file octo.ppm
+end
