@@ -97,6 +97,8 @@ bool parse(int argc, char **argv) {
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
 			edgeMatrix.addCol(Vec4f(float_args + 3));
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
+		} else if (strcmp(command, "sphere") == 0) { // TODO
+			// add appropriate edges for a sphere to the edge matrix
 		} else if (strcmp(command, "identity") == 0) {
 			// make the transform matrix the identity matrix
 			transformMatrix.clear();
