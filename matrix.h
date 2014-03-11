@@ -17,8 +17,9 @@ public:
 	const float get(const int, const int) const;
 	void set(const int, const int, const float);
 	const Vec4f *operator [](const int) const;
-	void transform(const Matrix4f*);
+	void transform(const Matrix4f *);
 	void subtract(const Vec4f);
+	void extend(const Matrix4f *);
 	void addCol(Vec4f);
 	void clear();
 	int width;

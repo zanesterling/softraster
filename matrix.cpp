@@ -41,11 +41,9 @@ void Matrix4f::transform(const Matrix4f *matrix) {
 	}
 }
 
-void Matrix4f::subtract(const Vec4f vec) {
-	for (int i = 0; i < width; i++) {
-		for (int j = 0; j < 4; j++) {
-			set(i, j, vec[j]);
-		}
+void Matrix4f::extend(const Matrix4f *matrix) {
+	for (int i = 0; i < matrix->width; i++) {
+		addCol(matrix->_cols[i]);
 	}
 }
 
