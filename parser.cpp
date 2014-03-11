@@ -4,7 +4,7 @@ using namespace std;
 
 int pix_width, pix_height;
 int xleft, ybot, xright, ytop;
-float camera[4];
+float camera[6];
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 			if (e.type == SDL_QUIT) {
 				quit = true;
 			}
-		}
+		}/*
 
 		// clear for the next frame
 		clear(drawSurface);
@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
 		drawEdges(drawSurface, &finalEdges, pixelColor);
 		drawToScreen();
 		SDL_Delay(10);
+		*/
 	}
     //SDL_Delay(4000);
 
@@ -162,6 +163,7 @@ bool parse(int argc, char **argv) {
 			}
 			screenTransform(&finalEdges, pix_width, pix_height,
 			                xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
 			drawEdges(drawSurface, &finalEdges, pixelColor);
 			drawToScreen();
 		} else if (strcmp(command, "render-perspective-cyclops") == 0) {
@@ -174,10 +176,32 @@ bool parse(int argc, char **argv) {
 			perspectiveTransform(&finalEdges, float_args);
 			screenTransform(&finalEdges, pix_width, pix_height,
 			                xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
 			drawEdges(drawSurface, &finalEdges, pixelColor);
 			drawToScreen();
-		} else if (strcmp(command, "render-perspective-stereo") == 0) { // TODO
+		} else if (strcmp(command, "render-perspective-stereo") == 0) {
 			// perform a perspective rendering to each of two eyes
+			Matrix4f finalEdges;
+			for (i = 0; i < edgeMatrix.width; i++) {
+				finalEdges.addCol(*(edgeMatrix[i]));
+			}
+			memcpy(camera, float_args, sizeof(float) * 6);
+			perspectiveTransform(&finalEdges, float_args);
+			screenTransform(&finalEdges, pix_width, pix_height,
+			                xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0, 0);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+
+			finalEdges.clear();
+			for (i = 0; i < edgeMatrix.width; i++) {
+				finalEdges.addCol(*(edgeMatrix[i]));
+			}
+			perspectiveTransform(&finalEdges, float_args+3);
+			screenTransform(&finalEdges, pix_width, pix_height,
+			                xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0xff);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+			drawToScreen();
 		} else if (strcmp(command, "clear-edge") == 0) {
 			// clear the edge matrix
 			edgeMatrix.clear();
