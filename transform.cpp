@@ -57,3 +57,21 @@ void screenTransform(Matrix4f *edgeMatrix, int width, int height, int xleft, int
 	translate(&transformMatrix, 0, height, 0);
 	edgeMatrix->transform(&transformMatrix);
 }
+
+void perspectiveTransform(Matrix4f *edgeMatrix, float eyex, float eyey, float eyez) {
+	float screen_dist = 12; // cross fingers
+	scale(edgeMatrix, 1, 1, -1);
+	translate(edgeMatrix, -eyex, -eyey, eyez);
+	for (int i = 0; i < edgeMatrix->width; i++) {
+		edgeMatrix->set(i, 0,
+		                screen_dist * edgeMatrix->get(i, 0) / edgeMatrix->get(i, 2));
+		edgeMatrix->set(i, 1,
+		                screen_dist * edgeMatrix->get(i, 1) / edgeMatrix->get(i, 2));
+	}
+	translate(edgeMatrix, eyex, eyey, -eyez);
+	scale(edgeMatrix, 0.25, 0.25, 0.25);
+}
+
+void perspectiveTransform(Matrix4f *edgeMatrix, float *eye) {
+	perspectiveTransform(edgeMatrix, eye[0], eye[1], eye[2]);
+}

@@ -4,6 +4,7 @@ using namespace std;
 
 int pix_width, pix_height;
 int xleft, ybot, xright, ytop;
+float camera[4];
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
@@ -34,16 +35,27 @@ int main(int argc, char **argv) {
 		// clear for the next frame
 		clear(drawSurface);
 
+		// find the object's center
+		float avgX = 0;
+		float avgY = 0;
+		for (int i = 0; i < edgeMatrix.width; i++) {
+			avgX += edgeMatrix.get(i, 0);
+			avgY += edgeMatrix.get(i, 1);
+		}
+		avgX /= edgeMatrix.width;
+		avgY /= edgeMatrix.width;
+
 		// rotate the model slightly around its center
-		translate(&edgeMatrix, -2, -2, 0);
+		translate(&edgeMatrix, -avgX, -avgY, 0);
 		rotatex(&edgeMatrix, 0.02);
 		rotatey(&edgeMatrix, 0.02);
-		translate(&edgeMatrix, 2, 2, 0);
+		translate(&edgeMatrix, avgX, avgY, 0);
 
 		Matrix4f finalEdges;
 		for (int i = 0; i < edgeMatrix.width; i++) {
 			finalEdges.addCol(*(edgeMatrix[i]));
 		}
+		perspectiveTransform(&finalEdges, camera);
 		screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
 		drawEdges(drawSurface, &finalEdges, pixelColor);
 		drawToScreen();
@@ -152,8 +164,18 @@ bool parse(int argc, char **argv) {
 			                xleft, ybot, xright, ytop);
 			drawEdges(drawSurface, &finalEdges, pixelColor);
 			drawToScreen();
-		} else if (strcmp(command, "render-perspective-cyclops") == 0) { // TODO
+		} else if (strcmp(command, "render-perspective-cyclops") == 0) {
 			// perform a perspective rendering to a single eye
+			Matrix4f finalEdges;
+			for (i = 0; i < edgeMatrix.width; i++) {
+				finalEdges.addCol(*(edgeMatrix[i]));
+			}
+			memcpy(camera, float_args, sizeof(float) * 4);
+			perspectiveTransform(&finalEdges, float_args);
+			screenTransform(&finalEdges, pix_width, pix_height,
+			                xleft, ybot, xright, ytop);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+			drawToScreen();
 		} else if (strcmp(command, "render-perspective-stereo") == 0) { // TODO
 			// perform a perspective rendering to each of two eyes
 		} else if (strcmp(command, "clear-edge") == 0) {
