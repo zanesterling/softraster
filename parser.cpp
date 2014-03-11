@@ -2,7 +2,8 @@
 
 using namespace std;
 
-const int SPHERE_LINES = 20;
+const int SPHERE_LAT_LINES = 20;
+const int SPHERE_LON_LINES = 20;
 
 int pix_width, pix_height;
 int xleft, ybot, xright, ytop;
@@ -24,7 +25,6 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	Uint32 color = SDL_MapRGB(drawSurface->format, 0, 0xff, 0);
 	SDL_Event e;
 	bool quit = false;
 	while (!quit) {
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 			if (e.type == SDL_QUIT) {
 				quit = true;
 			}
-		}
+		} 
 
 		// clear for the next frame
 		clear(drawSurface);
@@ -40,19 +40,31 @@ int main(int argc, char **argv) {
 		// find the object's center
 		float avgX = 0;
 		float avgY = 0;
+		float avgZ = 0;
 		for (int i = 0; i < edgeMatrix.width; i++) {
 			avgX += edgeMatrix.get(i, 0);
 			avgY += edgeMatrix.get(i, 1);
+			avgZ += edgeMatrix.get(i, 2);
 		}
 		avgX /= edgeMatrix.width;
 		avgY /= edgeMatrix.width;
+		avgZ /= edgeMatrix.width;
 
 		// rotate the model slightly around its center
-		translate(&edgeMatrix, -avgX, -avgY, 0);
+		translate(&edgeMatrix, -avgX, -avgY, -avgZ);
 		rotatex(&edgeMatrix, 0.02);
 		rotatey(&edgeMatrix, 0.02);
-		translate(&edgeMatrix, avgX, avgY, 0);
+		translate(&edgeMatrix, avgX, avgY, avgZ);
 
+		Matrix4f finalEdges;
+		finalEdges.extend(&edgeMatrix);
+		screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
+		pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
+		drawEdges(drawSurface, &finalEdges, pixelColor);
+		drawToScreen();
+		SDL_Delay(10);
+
+		/*
 		// draw red
 		Matrix4f finalEdges;
 		finalEdges.extend(&edgeMatrix);
@@ -70,6 +82,7 @@ int main(int argc, char **argv) {
 		drawEdges(drawSurface, &finalEdges, pixelColor);
 		drawToScreen();
 		SDL_Delay(10);
+		*/
 	}
     //SDL_Delay(4000);
 
@@ -126,7 +139,38 @@ bool parse(int argc, char **argv) {
 			edgeMatrix.set(edgeMatrix.width-1, 3, 1);
 		} else if (strcmp(command, "sphere") == 0) { // TODO
 			// add appropriate edges for a sphere to the edge matrix
-			
+			Matrix4f side;
+			Matrix4f prvSide;
+			for (int i = 0; i <= SPHERE_LON_LINES; i++) {
+				float rot_angle = i * M_PI * 2 / SPHERE_LON_LINES;
+				for (int j = 0; j < SPHERE_LAT_LINES; j++) {
+					float alt_angle = j * M_PI / SPHERE_LAT_LINES;
+					float x = float_args[0] * sin(alt_angle);
+					float y = float_args[0] * cos(alt_angle);
+					side.addCol(Vec4f(x, y, 0, 1));
+
+					alt_angle = (j+1) * M_PI / SPHERE_LAT_LINES;
+					x = float_args[0] * sin(alt_angle);
+					y = float_args[0] * cos(alt_angle);
+					side.addCol(Vec4f(x, y, 0, 1));
+				}
+				rotatey(&side, rot_angle);
+				if (i != 0) {
+					for (int j = 1; j < SPHERE_LAT_LINES; j++) {
+						side.addCol(*(side[j*2]));
+						side.addCol(*(prvSide[j*2]));
+						/* uncomment for triangles! woot
+						side.addCol(*(side[j*2]));
+						side.addCol(*(prvSide[j*2-2]));
+						*/
+					}
+				}
+				prvSide.clear();
+				prvSide.extend(&side);
+				translate(&side, float_args[1], float_args[2], float_args[3]);
+				edgeMatrix.extend(&side);
+				side.clear();
+			}
 		} else if (strcmp(command, "identity") == 0) {
 			// make the transform matrix the identity matrix
 			transformMatrix.clear();
