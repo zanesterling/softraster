@@ -35,10 +35,10 @@ int main(int argc, char **argv) {
 		clear(drawSurface);
 
 		// rotate the model slightly around its center
-		translate(&edgeMatrix, -250, -250, 0);
+		translate(&edgeMatrix, -2, -2, 0);
 		rotatex(&edgeMatrix, 0.02);
 		rotatey(&edgeMatrix, 0.02);
-		translate(&edgeMatrix, 250, 250, 0);
+		translate(&edgeMatrix, 2, 2, 0);
 
 		Matrix4f finalEdges;
 		for (int i = 0; i < edgeMatrix.width; i++) {
@@ -111,7 +111,6 @@ bool parse(int argc, char **argv) {
     		transformMatrix.addCol(Vec4f(0, 1, 0, 0));
     		transformMatrix.addCol(Vec4f(0, 0, 1, 0));
     		transformMatrix.addCol(Vec4f(0, 0, 0, 1));
-    		printMatrix(&transformMatrix);
 		} else if (strcmp(command, "move") == 0) {
 			// perform a translation on the edge matrix
 			translate(&transformMatrix, float_args[0], float_args[1], float_args[2]);
