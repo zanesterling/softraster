@@ -1,23 +1,18 @@
 #include "parser.h"
 
-const int SCREEN_WIDTH  = 500;
-const int SCREEN_HEIGHT = 500;
 using namespace std;
 
+int pix_width, pix_height;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
 SDL_Surface *drawSurface = NULL;
+Uint32 pixelColor;
 Matrix4f edgeMatrix;
 
 int main(int argc, char **argv) {
     if (argc != 2)
         return usage(argv);
-
-	cout << "initializing... ";
-	init();
-	cout << "initialized\n";
-
 
 	cout << "ready to parse... ";
 	if (!parse(argc, argv)) {
@@ -64,7 +59,6 @@ float dtor(float degrees) {
 }
 
 bool parse(int argc, char **argv) {
-    Uint32 pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
     Matrix4f transformMatrix;
     char command[64];
     char **str_args;
@@ -90,7 +84,7 @@ bool parse(int argc, char **argv) {
 	FILE *fp = fopen(argv[1], "r");
 	cout << "parsing\n";
 	while (getLine(fp, command, str_args, float_args)) {
-		// cout << command << endl;
+		cout << command << endl;
 		if (strcmp(command, "line") == 0) {
 			// add a line to the edge matrix
 			edgeMatrix.addCol(Vec4f(float_args));
@@ -125,9 +119,13 @@ bool parse(int argc, char **argv) {
 		} else if (strcmp(command, "screen") == 0) { // TODO
 			// set the lower-left and upper-right positions of the screen
 			cout << "screen description requested\n";
-		} else if (strcmp(command, "pixels") == 0) { // TODO
-			// set the lower-left and upper-right positions of the pixels
-			cout << "pixel description requested\n";
+		} else if (strcmp(command, "pixels") == 0) {
+			// initialize the surface
+			if (!init(float_args[0], float_args[1])) {
+				error("parser could not init");
+				return false;
+			}
+			pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0);
 		} else if (strcmp(command, "transform") == 0) {
 			// multiply the edge matrix by the transform matrix
 			edgeMatrix.transform(&transformMatrix);
@@ -223,7 +221,10 @@ void error(string error_message) {
 }
 
 // set up SDL and related components
-bool init() {
+bool init(int width, int height) {
+    pix_width = width;
+    pix_height = height;
+
     // if the init fails, display an error message and exit
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         error("SDL could not initialize");
@@ -231,20 +232,22 @@ bool init() {
     }
 
     // if the window fails to load, display an error message and exit
-    window = SDL_CreateWindow("Hello World", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Hello World", SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED, width, height,
+                              SDL_WINDOW_SHOWN);
     if (window == NULL) {
 		error("Window could not be created");
 		return false;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED |
+                                  SDL_RENDERER_PRESENTVSYNC);
     if (renderer == NULL) {
 		error("Renderer could not be initialized");
 		return false;
     }
 
-    drawSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+    drawSurface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
     if (drawSurface == NULL) {
 		error("Draw surface could not be created");
 		return false;

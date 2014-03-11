@@ -16,7 +16,7 @@ void drawToScreen();
 bool getLine(FILE *, char *, char **, float *);
 bool usage(char **);
 void error(std::string);
-bool init();
+bool init(int, int);
 void clean_up();
 
 #endif
