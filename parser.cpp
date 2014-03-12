@@ -1,5 +1,9 @@
 #include "parser.h"
 
+#define RENDER_PAR 0
+#define RENDER_PER 1
+#define RENDER_STE 2
+
 using namespace std;
 
 const int SPHERE_LAT_LINES = 20;
@@ -8,6 +12,7 @@ const int SPHERE_LON_LINES = 20;
 int pix_width, pix_height;
 int xleft, ybot, xright, ytop;
 float camera[6];
+int render_type;
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
@@ -56,33 +61,37 @@ int main(int argc, char **argv) {
 		rotatey(&edgeMatrix, 0.02);
 		translate(&edgeMatrix, avgX, avgY, avgZ);
 
-		Matrix4f finalEdges;
-		finalEdges.extend(&edgeMatrix);
-		screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
-		pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
-		drawEdges(drawSurface, &finalEdges, pixelColor);
+		if (render_type == RENDER_PAR) {
+			pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
+			Matrix4f finalEdges;
+			finalEdges.extend(&edgeMatrix);
+			screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+		} else if (render_type == RENDER_PER) {
+			Matrix4f finalEdges;
+			finalEdges.extend(&edgeMatrix);
+			screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+		} else if (render_type == RENDER_STE) {
+			// draw red
+			Matrix4f finalEdges;
+			finalEdges.extend(&edgeMatrix);
+			perspectiveTransform(&finalEdges, camera);
+			screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0, 0);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+
+			// draw cyan
+			finalEdges.clear();
+			finalEdges.extend(&edgeMatrix);
+			perspectiveTransform(&finalEdges, camera+3);
+			screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
+			pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0xff);
+			drawEdges(drawSurface, &finalEdges, pixelColor);
+		}
 		drawToScreen();
 		SDL_Delay(10);
-
-		/*
-		// draw red
-		Matrix4f finalEdges;
-		finalEdges.extend(&edgeMatrix);
-		perspectiveTransform(&finalEdges, camera);
-		screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
-		pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0, 0);
-		drawEdges(drawSurface, &finalEdges, pixelColor);
-
-		// draw cyan
-		finalEdges.clear();
-		finalEdges.extend(&edgeMatrix);
-		perspectiveTransform(&finalEdges, camera+3);
-		screenTransform(&finalEdges, pix_width, pix_height, xleft, ybot, xright, ytop);
-		pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0xff);
-		drawEdges(drawSurface, &finalEdges, pixelColor);
-		drawToScreen();
-		SDL_Delay(10);
-		*/
 	}
     //SDL_Delay(4000);
 
@@ -211,6 +220,7 @@ bool parse(int argc, char **argv) {
 			edgeMatrix.transform(&transformMatrix);
 		} else if (strcmp(command, "render-parallel") == 0) {
 			// perform a parellel projection along the z-axis
+			render_type = RENDER_PAR;
 			Matrix4f finalEdges;
 			finalEdges.extend(&edgeMatrix);
 			screenTransform(&finalEdges, pix_width, pix_height,
@@ -220,6 +230,7 @@ bool parse(int argc, char **argv) {
 			drawToScreen();
 		} else if (strcmp(command, "render-perspective-cyclops") == 0) {
 			// perform a perspective rendering to a single eye
+			render_type = RENDER_PER;
 			Matrix4f finalEdges;
 			finalEdges.extend(&edgeMatrix);
 			memcpy(camera, float_args, sizeof(float) * 4);
@@ -231,6 +242,7 @@ bool parse(int argc, char **argv) {
 			drawToScreen();
 		} else if (strcmp(command, "render-perspective-stereo") == 0) {
 			// perform a perspective rendering to each of two eyes
+			render_type = RENDER_STE;
 			// draw red
 			Matrix4f finalEdges;
 			finalEdges.extend(&edgeMatrix);
