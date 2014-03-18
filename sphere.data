@@ -7,7 +7,7 @@ rotate-x -30
 move 0 0 -5
 transform
 #render-parallel
-render-perspective-stereo -1.25 0 10 1.25 0 10
-#render-perspective-cyclops 0 0 10
+#render-perspective-stereo -1.25 0 10 1.25 0 10
+render-perspective-cyclops 0 0 10
 file sphere.ppm
 end

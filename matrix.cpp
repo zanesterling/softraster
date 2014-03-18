@@ -52,6 +52,13 @@ void Matrix4f::clear() {
 	 width = 0;
 }
 
+Vec4f::Vec4f() {
+	_data[0] = 0;
+	_data[1] = 0;
+	_data[2] = 0;
+	_data[3] = 0;
+}
+
 Vec4f::Vec4f(const float data[]) {
 	memcpy(this->_data, data, sizeof(float)*4);
 }
@@ -71,4 +78,8 @@ float Vec4f::operator [](const int i) const {
 
 float& Vec4f::operator [](const int i) {
 	return _data[i];
+}
+
+void Vec4f::operator =(const Vec4f *v) {
+	memcpy(this->_data, v->_data, sizeof(float)*4);
 }

@@ -29,11 +29,13 @@ private:
 
 class Vec4f {
 public:
+	Vec4f();
 	Vec4f(const float []);
 	Vec4f(const float, const float, const float, const float);
 	~Vec4f() {};
 	float  operator [](const int) const;
 	float& operator [](const int);
+	void operator =(const Vec4f *);
 private:
 	float _data[4];
 };

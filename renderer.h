@@ -22,4 +22,12 @@ void clear(SDL_Surface *, const Uint32);
 
 void savePPM(SDL_Surface *, const char *);
 void savePPM(SDL_Surface *, const std::string);
+
+void fillTriangle(SDL_Surface *, const Matrix4f *, const Uint32);
+void fillBottomFlatTriangle(SDL_Surface *surface, const Vec4f, const Vec4f,
+                            const Vec4f, const Uint32);
+void fillTopFlatTriangle(SDL_Surface *surface, const Vec4f, const Vec4f,
+                         const Vec4f, const Uint32);
+void fillRow(SDL_Surface *, const int, const int, const int, const Uint32);
+
 #endif

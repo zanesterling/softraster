@@ -9,7 +9,7 @@ void PutPixel32(SDL_Surface *surface, const int x, const int y, const Uint32 col
 }
 
 void PutPixel32_nolock(SDL_Surface *surface, const int x, const int y,
-                       const Uint32 color) {
+					   const Uint32 color) {
 	Uint8 * pixel = (Uint8*)surface->pixels;
 	pixel += (y * surface->pitch) + (x * sizeof(Uint32));
 	*((Uint32*)pixel) = color;
@@ -31,14 +31,14 @@ Uint32 GetPixel32_nolock(SDL_Surface *surface, const int x, const int y) {
 }
 
 void drawLine4i(SDL_Surface *surface, int x1, int y1, int x2, int y2,
-                const Uint32 pixel) {
+				const Uint32 pixel) {
 	int dx, dy;
 	int adx, ady;
 	int temp;
 	int i;
 
 	if (x1 < 0 || surface->w <= x1 || y1 < 0 || surface->h <= y1 ||
-	    x2 < 0 || surface->w <= x2 || y2 < 0 || surface->h <= y2) {
+		x2 < 0 || surface->w <= x2 || y2 < 0 || surface->h <= y2) {
 		return;
 	}
 
@@ -77,7 +77,7 @@ void drawLine4i(SDL_Surface *surface, int x1, int y1, int x2, int y2,
 }
 
 void drawLine2m(SDL_Surface *surface, const Matrix4f *p1, const Matrix4f *p2,
-                const Uint32 pixel) {
+				const Uint32 pixel) {
 	int x1, x2;
 	int y1, y2;
 
@@ -90,7 +90,7 @@ void drawLine2m(SDL_Surface *surface, const Matrix4f *p1, const Matrix4f *p2,
 }
 
 void drawLine2v(SDL_Surface *surface, const Vec4f *v1, const Vec4f *v2,
-                const Uint32 pixel) {
+				const Uint32 pixel) {
 	drawLine4i(surface, (*v1)[0], (*v1)[1], (*v2)[0], (*v2)[1], pixel);
 }
 
@@ -140,6 +140,105 @@ void savePPM(SDL_Surface *surface, const char *fn) {
 			fprintf(fp, "%d %d %d ", r, g, b);
 		}
 		fprintf(fp, "\n");
+	}
+	if (SDL_MUSTLOCK(surface)) {
+		SDL_UnlockSurface(surface);
+	}
+}
+
+// scanline rasterization
+void fillTriangle(SDL_Surface *surface, const Matrix4f *verts, const Uint32 color) {
+	/* TODO check to see if triangle is facing */
+	// sort the three vertices by y-coordinate ascending so v1 is the topmost vertex
+	Vec4f v1, v2, v3;
+	float val = verts->get(0, 1);
+	int index = 0;
+	int things[3];
+	for (int i = 0; i < 3; i++) {
+		things[i] = 0;
+	}
+	for (int i = 0; i < 3; i++) {
+		if (verts->get(i, 1) > val) {
+			val = verts->get(i, 1);
+			index = i;
+		}
+	}
+	v1 = (*verts)[index];
+	things[index] = 1;
+
+	for (int i = 0; i < 3; i++) {
+		if (verts->get(i, 1) < val) {
+			val = verts->get(i, 1);
+			index = i;
+		}
+	}
+	v3 = (*verts)[index];
+	things[index] = 3;
+
+	for (int i = 0; i < 3; i++) {
+		if (!things[i]) {
+			v2 = (*verts)[i];
+		}
+	}
+
+	/* here we know that v1[1] <= v2[1] <= v3[1] */
+	if (v2[1] == v3[1]) {
+		fillBottomFlatTriangle(surface, v1, v2, v3, color);
+	} else if (v1[1] == v2[1]) {
+		fillTopFlatTriangle(surface, v1, v2, v3, color);
+	} else {
+		/* general case - split the triangle in a topflat and bottom-flat one */
+		Vec4f v4((int)(v1[0] + ((float)(v2[1] - v1[1]) / (float)(v3[1] - v1[1])) *
+		          (v3[0] - v1[0])), v2[1], 0, 1);
+		fillBottomFlatTriangle(surface, v1, v2, v4, color);
+		fillTopFlatTriangle(surface, v2, v4, v3, color);
+		Matrix4f edgeMatrix;
+		edgeMatrix.addCol(v2);
+		edgeMatrix.addCol(v4);
+		drawEdges(surface, &edgeMatrix, SDL_MapRGB(surface->format, 0xff, 0, 0));
+	}
+}
+
+void fillBottomFlatTriangle(SDL_Surface *surface, const Vec4f v1, const Vec4f v2,
+							const Vec4f v3, const Uint32 color) {
+	float invslope1 = (v2[0] - v1[0]) / (v2[1] - v1[1]);
+	float invslope2 = (v3[0] - v1[0]) / (v3[1] - v1[1]);
+
+	float curx1 = v1[0];
+	float curx2 = v1[0];
+
+	for (int scanlineY = v1[1]; scanlineY >= v2[1]; scanlineY--) {
+		fillRow(surface, (int)curx2, (int)curx1, scanlineY, color);
+		curx1 -= invslope1;
+		curx2 -= invslope2;
+	}
+}
+
+void fillTopFlatTriangle(SDL_Surface *surface, const Vec4f v1, const Vec4f v2,
+						 const Vec4f v3, const Uint32 color) {
+	float invslope1 = (v3[0] - v1[0]) / (v3[1] - v1[1]);
+	float invslope2 = (v3[0] - v2[0]) / (v3[1] - v2[1]);
+
+	float curx1 = v3[0];
+	float curx2 = v3[0];
+
+	for (int scanlineY = v3[1]; scanlineY < v1[1]; scanlineY++) {
+		curx1 += invslope1;
+		curx2 += invslope2;
+		fillRow(surface, (int)curx1, (int)curx2, scanlineY, color);
+	}
+}
+
+void fillRow(SDL_Surface *surface, int x1, int x2, const int y,
+			 const Uint32 color) {
+	if (x1 > x2) {
+		swap(x1, x2);
+	}
+	if (SDL_MUSTLOCK(surface)) {
+		SDL_LockSurface(surface);
+	}
+	for (int i = x1; i <= x2; i++) {
+		PutPixel32_nolock(surface, i, y, color);
 	}
 	if (SDL_MUSTLOCK(surface)) {
 		SDL_UnlockSurface(surface);
