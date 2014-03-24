@@ -234,6 +234,8 @@ void fillRow(SDL_Surface *surface, int x1, int x2, const int y,
 	if (x1 > x2) {
 		swap(x1, x2);
 	}
+	if (x1 < 0) x1 = 0;
+	if (x2 >= surface->w) x2 = 249;
 	if (SDL_MUSTLOCK(surface)) {
 		SDL_LockSurface(surface);
 	}

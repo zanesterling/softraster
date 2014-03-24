@@ -1,5 +1,8 @@
 #include "triangles.h"
 
+const int SCREEN_WIDTH  = 250;
+const int SCREEN_HEIGHT = 250;
+
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
@@ -8,17 +11,18 @@ Uint32 pixelColor;
 
 int main(int argc, char **argv) {
 	using namespace std;
-	if (!init(250, 250)) {
+	if (!init(SCREEN_WIDTH, SCREEN_HEIGHT)) {
 		cout << "initialization failed" << endl;
 		return 1;
 	}
 
 	Matrix4f triangleMatrix;
-	Uint32 pixelColor;
+	int w2 = SCREEN_WIDTH / 2;
+	int h2 = SCREEN_HEIGHT / 2;
 
-	triangleMatrix.addCol(Vec4f(125, 187, 0, 1));
-	triangleMatrix.addCol(Vec4f(62, 68, 0, 1));
-	triangleMatrix.addCol(Vec4f(215, 43, 0, 1));
+	triangleMatrix.addCol(Vec4f(w2,     h2*1.5, 0, 1));
+	triangleMatrix.addCol(Vec4f(w2*1.5, h2*0.6, 0, 1));
+	triangleMatrix.addCol(Vec4f(w2*0.5, h2*0.4, 0, 1));
 	pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
 	//screenTransform(&triangleMatrix, 500, 500, -2, -2, 2, 2);
 	fillTriangle(drawSurface, &triangleMatrix, pixelColor);
@@ -38,10 +42,9 @@ int main(int argc, char **argv) {
 
 		if (!pause) {
 			clear(drawSurface);
-			translate(&triangleMatrix, -125, -125, 0);
-			rotatex(&triangleMatrix, 0.02*M_PI);
-			translate(&triangleMatrix, 125, 125, 0);
-			cout << "asdf";
+			translate(&triangleMatrix, -w2, -h2, 0);
+			rotatex(&triangleMatrix, 0.01*M_PI);
+			translate(&triangleMatrix, w2, h2, 0);
 			fillTriangle(drawSurface, &triangleMatrix, pixelColor);
 			drawToScreen();
 		}

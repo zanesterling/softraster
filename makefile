@@ -19,9 +19,6 @@ matrix.o: matrix.cpp matrix.h
 transform.o: transform.cpp transform.h
 	$(GCC) -c transform.cpp $(FLAGS)
 
-run: parser
-	./parser
-
 clean:
 	rm -f *.o
 	rm -f demo
