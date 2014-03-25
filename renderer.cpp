@@ -192,15 +192,13 @@ void fillTriangle(SDL_Surface *surface, const Matrix4f *verts, const Uint32 colo
 		          (v3[0] - v1[0])), v2[1], 0, 1);
 		fillBottomFlatTriangle(surface, v1, v2, v4, color);
 		fillTopFlatTriangle(surface, v2, v4, v3, color);
-		Matrix4f edgeMatrix;
-		edgeMatrix.addCol(v2);
-		edgeMatrix.addCol(v4);
-		drawEdges(surface, &edgeMatrix, SDL_MapRGB(surface->format, 0xff, 0, 0));
 	}
 }
 
 void fillBottomFlatTriangle(SDL_Surface *surface, const Vec4f v1, const Vec4f v2,
 							const Vec4f v3, const Uint32 color) {
+	if (v1[0] == v2[0] && v2[0] == v3[0]) return;
+	if (v1[1] == v2[1] && v2[1] == v3[1]) return;
 	float invslope1 = (v2[0] - v1[0]) / (v2[1] - v1[1]);
 	float invslope2 = (v3[0] - v1[0]) / (v3[1] - v1[1]);
 
@@ -216,16 +214,38 @@ void fillBottomFlatTriangle(SDL_Surface *surface, const Vec4f v1, const Vec4f v2
 
 void fillTopFlatTriangle(SDL_Surface *surface, const Vec4f v1, const Vec4f v2,
 						 const Vec4f v3, const Uint32 color) {
+	if (v1[0] == v2[0] && v2[0] == v3[0]) return;
+	if (v1[1] == v2[1] && v2[1] == v3[1]) return;
 	float invslope1 = (v3[0] - v1[0]) / (v3[1] - v1[1]);
 	float invslope2 = (v3[0] - v2[0]) / (v3[1] - v2[1]);
+	if (abs(invslope1) < 5 && abs(invslope2) < 5) {
+		float curx1 = v3[0];
+		float curx2 = v3[0];
 
-	float curx1 = v3[0];
-	float curx2 = v3[0];
+		for (int scanlineY = v3[1]; scanlineY < v1[1]; scanlineY++) {
+			curx1 += invslope1;
+			curx2 += invslope2;
+			fillRow(surface, (int)curx1, (int)curx2, scanlineY, color);
+		}
+	} else {
+		invslope1 = (v3[1] - v1[1]) / (v3[0] - v1[0]);
+		invslope2 = (v3[1] - v2[1]) / (v3[0] - v2[0]);
+		if (invslope2 < 0) {
+			fillBottomFlatTriangle(surface, v1, v2, v3, color);
+			return;
+		}
+		float cury1 = v3[1];
+		float cury2 = v3[1];
 
-	for (int scanlineY = v3[1]; scanlineY < v1[1]; scanlineY++) {
-		curx1 += invslope1;
-		curx2 += invslope2;
-		fillRow(surface, (int)curx1, (int)curx2, scanlineY, color);
+		for (int scanlineX = v3[0]; scanlineX < v2[0]; scanlineX++) {
+			cury1 += invslope1;
+			cury2 += invslope2;
+			fillCol(surface, (int)cury1, (int)cury2, scanlineX, color);
+		}
+		for (int scanlineX = v2[0]; scanlineX < v1[0]; scanlineX++) {
+			cury1 += invslope1;
+			fillCol(surface, (int)cury1, (int)cury2, scanlineX, color);
+		}
 	}
 }
 
@@ -245,4 +265,35 @@ void fillRow(SDL_Surface *surface, int x1, int x2, const int y,
 	if (SDL_MUSTLOCK(surface)) {
 		SDL_UnlockSurface(surface);
 	}
+}
+
+void fillCol(SDL_Surface *surface, int y1, int y2, const int x,
+			 const Uint32 color) {
+	if (y1 > y2) {
+		swap(y1, y2);
+	}
+	if (y1 < 0) y1 = 0;
+	if (y2 >= surface->h) y2 = 249;
+	if (SDL_MUSTLOCK(surface)) {
+		SDL_LockSurface(surface);
+	}
+	for (int i = y1; i <= y2; i++) {
+		PutPixel32_nolock(surface, x, i, color);
+	}
+	if (SDL_MUSTLOCK(surface)) {
+		SDL_UnlockSurface(surface);
+	}
+}
+
+void drawRect(SDL_Surface *surface, int x, int y, int w, int h, const Uint32 color) {
+	Matrix4f edgeMatrix;
+	edgeMatrix.addCol(Vec4f(x,   y,   0, 1));
+	edgeMatrix.addCol(Vec4f(x+w, y,   0, 1));
+	edgeMatrix.addCol(Vec4f(x,   y,   0, 1));
+	edgeMatrix.addCol(Vec4f(x,   y+h, 0, 1));
+	edgeMatrix.addCol(Vec4f(x+w, y,   0, 1));
+	edgeMatrix.addCol(Vec4f(x+w, y+h, 0, 1));
+	edgeMatrix.addCol(Vec4f(x,   y+h, 0, 1));
+	edgeMatrix.addCol(Vec4f(x+w, y+h, 0, 1));
+	drawEdges(surface, &edgeMatrix, color);
 }

@@ -29,5 +29,7 @@ void fillBottomFlatTriangle(SDL_Surface *surface, const Vec4f, const Vec4f,
 void fillTopFlatTriangle(SDL_Surface *surface, const Vec4f, const Vec4f,
                          const Vec4f, const Uint32);
 void fillRow(SDL_Surface *, const int, const int, const int, const Uint32);
+void fillCol(SDL_Surface *, const int, const int, const int, const Uint32);
+void drawRect(SDL_Surface *, int, int, int, int, const Uint32);
 
 #endif

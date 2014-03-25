@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 			fillTriangle(drawSurface, &triangleMatrix, pixelColor);
 			drawToScreen();
 		}
-		SDL_Delay(10);
+		SDL_Delay(20);
 	}
 }
 
