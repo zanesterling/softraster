@@ -10,13 +10,13 @@ parser: parser.cpp renderer.o matrix.o transform.o
 demo: demo.cpp renderer.o matrix.o transform.o
 	$(GCC) -o demo demo.cpp renderer.o matrix.o $(FLAGS)
 
-renderer.o: renderer.cpp renderer.h
+renderer.o: renderer.cpp headers/renderer.h
 	$(GCC) -c renderer.cpp $(FLAGS)
 
-matrix.o: matrix.cpp matrix.h
+matrix.o: matrix.cpp headers/matrix.h
 	$(GCC) -c matrix.cpp $(FLAGS)
 
-transform.o: transform.cpp transform.h
+transform.o: transform.cpp headers/transform.h
 	$(GCC) -c transform.cpp $(FLAGS)
 
 clean:
