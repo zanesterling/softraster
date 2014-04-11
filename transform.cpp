@@ -1,4 +1,4 @@
-#include "transform.h"
+#include "headers/transform.h"
 
 void translate(Matrix4f *edgeMatrix, float x, float y, float z) {
 	Matrix4f transformMatrix;

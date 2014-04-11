@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "headers/renderer.h"
 
 void PutPixel32(SDL_Surface *surface, const int x, const int y, const Uint32 color) {
 	if (SDL_MUSTLOCK(surface))

@@ -1,4 +1,8 @@
-#include "demo.h"
+#include "headers/demo.h"
+
+/*
+ * Demonstrates line-drawing and matrix transforms
+ */
 
 const int SCREEN_WIDTH  = 640;
 const int SCREEN_HEIGHT = 480;
