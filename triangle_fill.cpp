@@ -1,4 +1,4 @@
-#include "triangles.h"
+#include "headers/triangle_fill.h"
 
 const int SCREEN_WIDTH  = 250;
 const int SCREEN_HEIGHT = 250;

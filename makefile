@@ -1,8 +1,8 @@
 GCC=g++
 FLAGS=-I/usr/local/lib -Wl,-rpath,/usr/local/lib -lSDL2
 
-triangles: triangles.cpp renderer.o matrix.o transform.o
-	$(GCC) -o triangles triangles.cpp renderer.o matrix.o transform.o $(FLAGS)
+triangle_fill: triangle_fill.cpp renderer.o matrix.o transform.o
+	$(GCC) -o triangle_fill triangle_fill.cpp renderer.o matrix.o transform.o $(FLAGS)
 
 parser: parser.cpp renderer.o matrix.o transform.o
 	$(GCC) -o parser parser.cpp renderer.o matrix.o transform.o $(FLAGS)
@@ -23,4 +23,4 @@ clean:
 	rm -f *.o
 	rm -f demo
 	rm -f parser
-	rm -f triangles
+	rm -f triangle_fill
