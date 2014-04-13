@@ -297,3 +297,15 @@ void drawRect(SDL_Surface *surface, int x, int y, int w, int h, const Uint32 col
 	edgeMatrix.addCol(Vec4f(x+w, y+h, 0, 1));
 	drawEdges(surface, &edgeMatrix, color);
 }
+
+void drawTriangles(SDL_Surface *drawSurface, Matrix4f *triangleMatrix, Uint32 pixel) {
+	// TODO add back-face culling
+	for (int i = 0; i < triangleMatrix->width; i += 3) {
+		drawLine2v(drawSurface, (*triangleMatrix)[i],   (*triangleMatrix)[i+1],
+		           pixel);
+		drawLine2v(drawSurface, (*triangleMatrix)[i+1], (*triangleMatrix)[i+2],
+		           pixel);
+		drawLine2v(drawSurface, (*triangleMatrix)[i+2], (*triangleMatrix)[i],
+		           pixel);
+	}
+}
