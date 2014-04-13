@@ -58,16 +58,17 @@ void screenTransform(Matrix4f *edgeMatrix, int *sdim) {
 	edgeMatrix->transform(&transformMatrix);
 }
 
-void screenTransform(Matrix4f *edgeMatrix, int width, int height, int xleft, int ybot,
-                     int xright, int ytop) {
+void screenTransform(Matrix4f *edgeMatrix, int pw, int ph, int xl, int yb, int xr,
+                     int yt) {
 	Matrix4f transformMatrix;
 	transformMatrix.addCol(Vec4f(1, 0, 0, 0));
 	transformMatrix.addCol(Vec4f(0, 1, 0, 0));
 	transformMatrix.addCol(Vec4f(0, 0, 1, 0));
 	transformMatrix.addCol(Vec4f(0, 0, 0, 1));
-	translate(&transformMatrix, -xleft, -ybot, 0);
-	scale(&transformMatrix, width / (xright - xleft), height / (ybot - ytop), 1);
-	translate(&transformMatrix, 0, height, 0);
+	translate(&transformMatrix, -xl, -yb, 0);
+	scale(&transformMatrix, pw / (xr - xl),
+	                        ph / (yb - yt), 1);
+	translate(&transformMatrix, 0, ph, 0);
 	edgeMatrix->transform(&transformMatrix);
 }
 
