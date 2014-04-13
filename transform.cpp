@@ -45,6 +45,19 @@ void rotatez(Matrix4f *edgeMatrix, float t) {
 	edgeMatrix->transform(&transformMatrix);
 }
 
+void screenTransform(Matrix4f *edgeMatrix, int *sdim) {
+	Matrix4f transformMatrix;
+	transformMatrix.addCol(Vec4f(1, 0, 0, 0));
+	transformMatrix.addCol(Vec4f(0, 1, 0, 0));
+	transformMatrix.addCol(Vec4f(0, 0, 1, 0));
+	transformMatrix.addCol(Vec4f(0, 0, 0, 1));
+	translate(&transformMatrix, -sdim[2], -sdim[5], 0);
+	scale(&transformMatrix, sdim[0] / (sdim[4] - sdim[2]),
+	                        sdim[1] / (sdim[3] - sdim[5]), 1);
+	translate(&transformMatrix, 0, sdim[1], 0);
+	edgeMatrix->transform(&transformMatrix);
+}
+
 void screenTransform(Matrix4f *edgeMatrix, int width, int height, int xleft, int ybot,
                      int xright, int ytop) {
 	Matrix4f transformMatrix;
