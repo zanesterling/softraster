@@ -61,3 +61,50 @@ void clean_up() {
 	SDL_FreeSurface(drawSurface);
 	SDL_Quit();
 }
+
+void renderParallelTriangles(SDL_Surface *drawSurface, Matrix4f *triangleMatrix,
+                             int *screen_dimensions) {
+	Matrix4f finalTriangles;
+
+	finalTriangles.extend(&triangleMatrix);
+	screenTransform(&finalTriangles, screen_dimensions);
+	drawTriangles(drawSurface, &finalTriangles,
+	              SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff));
+	drawToScreen();
+}
+
+void renderPerspectiveCyclopsTriangles(SDL_Surface *drawSurface,
+                                       Matrix4f *triangleMatrix, float *camera
+                                       int *screen_dimensions) {
+	Matrix4f finalTriangles;
+
+	finalTriangles.extend(&triangleMatrix);
+	perspectiveTransform(&finalTriangles, camera);
+	screenTransform(&finalTriangles, screen_dimensions);
+	drawTriangles(drawSurface, &finalTriangles,
+	              SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff));
+	drawToScreen();
+}
+
+void renderPerspectiveStereoTriangles(SDL_Surface *drawSurface,
+                                      Matrix4f *triangleMatrix, float *camera,
+                                      int *screen_dimensions) {
+	Matrix4f finalTriangles;
+	Uint32 pixelColor;
+
+	// draw red
+	finalTriangles.extend(triangleMatrix);
+	perspectiveTransform(&finalTriangles, camera);
+	screenTransform(&finalTriangles, screen_dimensions);
+	pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0, 0);
+	drawTriangles(drawSurface, &finalEdges, pixelColor);
+
+	// draw cyan
+	finalTriangles.clear();
+	finalTriangles.extend(&triangleMatrix);
+	perspectiveTransform(&finalTriangles, float_args+3);
+	screenTransform(&finalTriangles, screen_dimensions);
+	pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0xff);
+	drawTriangles(drawSurface, &finalTriangles, pixelColor);
+	drawToScreen();
+}
