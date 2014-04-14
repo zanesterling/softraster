@@ -52,6 +52,14 @@ void Matrix4f::clear() {
 	 width = 0;
 }
 
+void Matrix4f::print() {
+	using namespace std;
+	for (int i = 0; i < width; i++) {
+		cout << get(i,0) << " " << get(i,1) << " "
+		     << get(i,2) << " " << get(i,3) << endl;
+	}
+}
+
 Vec4f::Vec4f() {
 	_data[0] = 0;
 	_data[1] = 0;

@@ -11,6 +11,7 @@
 #include "transform.h"
 
 int main(int, char **);
+float dtor(float); //degrees to radians
 bool parse(int, char **);
 void drawToScreen();
 bool getLine(FILE *, char *, char **, float *);

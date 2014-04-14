@@ -1,12 +1,25 @@
 #ifndef WINDOW
 #define WINDOW
 
-void drawToScreen();
-bool init(int width, int height);
-void clean_up();
+#include <SDL2/SDL.h>
+#include <string>
+#include <iostream>
+#include "renderer.h"
+#include "matrix.h"
+#include "transform.h"
 
-void renderParallelTriangles(SDL_Surface *, const Matrix4f *);
-void renderPerspectiveCyclopsTriangles(SDL_Surface *,const Matrix4f *, const float *);
-void renderPerspectiveStereoTriangles(SDL_Surface *, const Matrix4f *, const float *);
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+extern SDL_Texture *drawTexture;
+extern SDL_Surface *drawSurface;
+
+void drawToScreen();
+bool init(int, int);
+void clean_up();
+void error(std::string);
+
+void renderParallelTriangles(Matrix4f *, const int *);
+void renderPerspectiveCyclopsTriangles(Matrix4f *, const float *, const int *);
+void renderPerspectiveStereoTriangles(Matrix4f *, const float *, const int *);
 
 #endif

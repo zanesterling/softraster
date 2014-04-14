@@ -1,11 +1,16 @@
 #include "headers/triangle_solids.h"
 
+#define RENDER_PAR 0
+#define RENDER_PER 1
+#define RENDER_STE 2
+
 using namespace std;
+
+const int SPHERE_LAT_LINES = 20;
+const int SPHERE_LON_LINES = 20;
 
 Matrix4f triangleMatrix;
 int screen_dimensions[6];
-//int pix_width, pix_height;
-//int xleft, ybot, xright, ytop;
 float camera[6];
 int render_type;
 
@@ -15,15 +20,58 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	if (!init(SCREEN_WIDTH, SCREEN_HEIGHT)) {
-		cout << "initialization failed" << endl;
-		return 1;
-	}
-
-	if (!parse(argc, argv)) {
+	if (!parse(argv)) {
 		cout << "error occurred while parsing" << endl;
 		return 1;
 	}
+
+	SDL_Event e;
+	bool quit = false;
+	while (!quit) {
+		while (SDL_PollEvent(&e) != 0) {
+			if (e.type == SDL_QUIT) {
+				quit = true;
+			}
+		} 
+
+		// clear for the next frame
+		clear(drawSurface);
+
+		// find the object's center
+		float avgX = 0;
+		float avgY = 0;
+		float avgZ = 0;
+		for (int i = 0; i < triangleMatrix.width; i++) {
+			avgX += triangleMatrix.get(i, 0);
+			avgY += triangleMatrix.get(i, 1);
+			avgZ += triangleMatrix.get(i, 2);
+		}
+		avgX /= triangleMatrix.width;
+		avgY /= triangleMatrix.width;
+		avgZ /= triangleMatrix.width;
+
+		// rotate the model slightly around its center
+		translate(&triangleMatrix, -avgX, -avgY, -avgZ);
+		rotatex(&triangleMatrix, 0.02);
+		rotatey(&triangleMatrix, 0.02);
+		translate(&triangleMatrix, avgX, avgY, avgZ);
+
+		if (render_type == RENDER_PAR) {
+			renderParallelTriangles(&triangleMatrix, screen_dimensions);
+		} else if (render_type == RENDER_PER) {
+			renderPerspectiveCyclopsTriangles(&triangleMatrix, camera,
+			                                  screen_dimensions);
+		} else if (render_type == RENDER_STE) {
+			renderPerspectiveStereoTriangles(&triangleMatrix, camera,
+			                                 screen_dimensions);
+		}
+		drawToScreen();
+		SDL_Delay(10);
+	}
+    //SDL_Delay(4000);
+
+    clean_up();
+    return 0;
 }
 
 bool parse(char **argv) {
@@ -34,7 +82,7 @@ bool parse(char **argv) {
 	int frame_count = 0;
 
 	str_args = (char **) malloc(sizeof(char *) * 4);
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
 		str_args[i] = (char *) calloc(64, sizeof(char));
     }
 
@@ -47,6 +95,7 @@ bool parse(char **argv) {
 	FILE *fp = fopen(argv[1], "r");
 	cout << "parsing\n";
 	while (getLine(fp, command, str_args, float_args)) {
+		cout << command << endl;
 		if (strcmp(command, "identity") == 0) {
 			transformMatrix.clear();
 			transformMatrix.addCol(Vec4f(1, 0, 0, 0));
@@ -58,27 +107,49 @@ bool parse(char **argv) {
 		} else if (strcmp(command, "scale") == 0) {
 			scale(&transformMatrix, float_args[0], float_args[1], float_args[2]);
 		} else if (strcmp(command, "rotate-x") == 0) {
-			rotatex(&transformMatrix, float_args[0]);
+			// rotate about the x-axis
+			rotatex(&transformMatrix, dtor(float_args[0]));
 		} else if (strcmp(command, "rotate-y") == 0) {
-			rotatey(&transformMatrix, float_args[0]);
+			// rotate about the y-axis
+			rotatey(&transformMatrix, dtor(float_args[0]));
 		} else if (strcmp(command, "rotate-z") == 0) {
-			rotatez(&transformMatrix, float_args[0]);
+			// rotate about the z-axis
+			rotatez(&transformMatrix, dtor(float_args[0]));
 		} else if (strcmp(command, "push") == 0) { // TODO
+			// push the current transformation (matrix?) to the stack
 		} else if (strcmp(command, "pop") == 0) { // TODO
-		} else if (strcmp(command, "sphere-t") == 0) { // TODO
-		} else if (strcmp(command, "box-t") == 0) { // TODO
+			// pop a transformation matrix from the stack and make it current
+		} else if (strcmp(command, "sphere-t") == 0) {
+			// compose a sphere made from triangles, then scale, rotate, and move it
+			Matrix4f sphere;
+			makeSphere(&sphere);
+			scale(&sphere, float_args[0], float_args[1], float_args[2]);
+			// TODO figure out what ordering to use for rotations
+			translate(&sphere, float_args[3], float_args[4], float_args[5]);
+			sphere.transform(&transformMatrix);
+			triangleMatrix.extend(&sphere);
+		} else if (strcmp(command, "box-t") == 0) {
+			// compose a box made from triangles, then scale, rotate, and move it
 			Matrix4f box;
-			box.addCol(Vec4f(-1, -1, 1, 1);
+			makeBox(&box);
+			scale(&box, float_args[0], float_args[1], float_args[2]);
+			// TODO figure out what ordering to use for rotations
+			translate(&box, float_args[3], float_args[4], float_args[5]);
+			box.transform(&transformMatrix);
+			triangleMatrix.extend(&box);
 		} else if (strcmp(command, "screen") == 0) {
 			// set the lower-left and upper-right positions of the screen
-			screen_dimensions[2] = float_args[2];
-			screen_dimensions[3] = float_args[3];
-			screen_dimensions[4] = float_args[4];
-			screen_dimensions[5] = float_args[5];
+			screen_dimensions[2] = float_args[0];
+			screen_dimensions[3] = float_args[1];
+			screen_dimensions[4] = float_args[2];
+			screen_dimensions[5] = float_args[3];
 		} else if (strcmp(command, "pixels") == 0) {
 			// initialize the surface
 			screen_dimensions[0] = float_args[0];
 			screen_dimensions[1] = float_args[1];
+			for (int i = 0; i < 6; i++)
+				cout << screen_dimensions[i] << " ";
+			cout << endl;
 			if (!init(float_args[0], float_args[1])) {
 				error("parser could not init");
 				return false;
@@ -86,17 +157,19 @@ bool parse(char **argv) {
 		} else if (strcmp(command, "render-parallel") == 0) {
 			// perform a parellel projection along the z-axis
 			render_type = RENDER_PAR;
-			renderParallelTriangles(&triangleMatrix);
+			renderParallelTriangles(&triangleMatrix, screen_dimensions);
 		} else if (strcmp(command, "render-perspective-cyclops") == 0) {
 			// perform a perspective rendering to a single eye
 			render_type = RENDER_PER;
 			memcpy(camera, float_args, sizeof(float) * 3);
-			renderPerspectiveCyclopsTriangles(&triangleMatrix, camera);
+			renderPerspectiveCyclopsTriangles(&triangleMatrix, camera,
+			                                  screen_dimensions);
 		} else if (strcmp(command, "render-perspective-stereo") == 0) {
 			// perform a perspective rendering to each of two eyes
 			render_type = RENDER_STE;
 			memcpy(camera, float_args, sizeof(float) * 6);
-			renderPerspectiveStereoTriangles(&triangleMatrix, camera);
+			renderPerspectiveStereoTriangles(&triangleMatrix, camera,
+			                                 screen_dimensions);
 		} else if (strcmp(command, "clear-triangles") == 0) {
 			// clear the triangle matrix
 			triangleMatrix.clear();
@@ -113,7 +186,7 @@ bool parse(char **argv) {
 			        str_args[0], frame_count++);
 		} else if (strcmp(command, "end") == 0) {
 			// stop parsing
-			return 0;
+			return true;
 		}
 	}
 }
@@ -121,7 +194,6 @@ bool parse(char **argv) {
 void usage(char **argv) {
     cout << "error: no input file\n";
     cout << argv[0] << " inputfile\n";
-    return false;
 }
 
 bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_buffer) {
@@ -159,4 +231,86 @@ bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_bu
 	}
 
 	return true;
+}
+
+// degrees to radians
+float dtor(float degrees) {
+	return degrees * M_PI / 180;
+}
+
+void makeBox(Matrix4f *boxMatrix) {
+	// front face
+	boxMatrix->addCol(Vec4f(-1, -1, 1, 1));
+	boxMatrix->addCol(Vec4f(1,  -1, 1, 1));
+	boxMatrix->addCol(Vec4f(1,  1,  1, 1));
+	boxMatrix->addCol(Vec4f(1,  1,  1, 1));
+	boxMatrix->addCol(Vec4f(-1, 1,  1, 1));
+	boxMatrix->addCol(Vec4f(-1, -1, 1, 1));
+
+	// back face
+	boxMatrix->addCol(Vec4f(1,  -1, -1, 1));
+	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+	boxMatrix->addCol(Vec4f(1,  1,  -1, 1));
+	boxMatrix->addCol(Vec4f(-1, 1,  -1, 1));
+	boxMatrix->addCol(Vec4f(1,  1,  -1, 1));
+	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+
+	// right face
+	boxMatrix->addCol(Vec4f(1, -1, 1,  1));
+	boxMatrix->addCol(Vec4f(1, -1, -1, 1));
+	boxMatrix->addCol(Vec4f(1, 1,  -1, 1));
+	boxMatrix->addCol(Vec4f(1, 1,  -1, 1));
+	boxMatrix->addCol(Vec4f(1, 1,  1,  1));
+	boxMatrix->addCol(Vec4f(1, -1, 1,  1));
+
+	// left face
+	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+	boxMatrix->addCol(Vec4f(-1, -1, 1,  1));
+	boxMatrix->addCol(Vec4f(-1, 1,  -1, 1));
+	boxMatrix->addCol(Vec4f(-1, 1,  -1, 1));
+	boxMatrix->addCol(Vec4f(-1, -1, 1,  1));
+	boxMatrix->addCol(Vec4f(-1, 1,  1,  1));
+
+	// top face
+	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+	boxMatrix->addCol(Vec4f(1,  -1, -1, 1));
+	boxMatrix->addCol(Vec4f(1,  -1, 1,  1));
+	boxMatrix->addCol(Vec4f(1,  -1, 1,  1));
+	boxMatrix->addCol(Vec4f(-1, -1, 1,  1));
+	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+
+	// bottom face
+	boxMatrix->addCol(Vec4f(1,  1, -1, 1));
+	boxMatrix->addCol(Vec4f(-1, 1, -1, 1));
+	boxMatrix->addCol(Vec4f(1,  1, 1,  1));
+	boxMatrix->addCol(Vec4f(1,  1, 1,  1));
+	boxMatrix->addCol(Vec4f(-1, 1, -1, 1));
+	boxMatrix->addCol(Vec4f(-1, 1, 1,  1));
+}
+
+void makeSphere(Matrix4f *sphereMatrix) {
+	Matrix4f sector;
+	Matrix4f side;
+	Matrix4f nextSide;
+
+	for (int i = 0; i <= SPHERE_LAT_LINES; i++) {
+		float angle = M_PI * i / SPHERE_LAT_LINES;
+		side.addCol(Vec4f(sin(angle), -cos(angle), 0, 1));
+		nextSide.addCol(*(side[i]));
+	}
+
+	rotatey(&nextSide, M_PI * 2 / SPHERE_LON_LINES);
+	for (int i = 0; i < SPHERE_LON_LINES; i++) {
+		sector.addCol(*(side[i]));
+		sector.addCol(*(side[i+1]));
+		sector.addCol(*(nextSide[i+1]));
+		sector.addCol(*(nextSide[i+1]));
+		sector.addCol(*(nextSide[i]));
+		sector.addCol(*(side[i]));
+	}
+
+	for (int i = 0; i < SPHERE_LON_LINES; i++) {
+		sphereMatrix->extend(&sector);
+		rotatey(&sector, M_PI * 2 / SPHERE_LON_LINES);
+	}
 }

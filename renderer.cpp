@@ -298,7 +298,8 @@ void drawRect(SDL_Surface *surface, int x, int y, int w, int h, const Uint32 col
 	drawEdges(surface, &edgeMatrix, color);
 }
 
-void drawTriangles(SDL_Surface *drawSurface, Matrix4f *triangleMatrix, Uint32 pixel) {
+void drawTriangles(SDL_Surface *drawSurface, const Matrix4f *triangleMatrix,
+                   const Uint32 pixel) {
 	// TODO add back-face culling
 	for (int i = 0; i < triangleMatrix->width; i += 3) {
 		drawLine2v(drawSurface, (*triangleMatrix)[i],   (*triangleMatrix)[i+1],

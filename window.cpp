@@ -1,8 +1,5 @@
 #include "headers/window.h"
 
-const int SCREEN_WIDTH  = 250;
-const int SCREEN_HEIGHT = 250;
-
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Texture *drawTexture = NULL;
@@ -12,6 +9,12 @@ void drawToScreen() {
     SDL_UpdateTexture(drawTexture, NULL, drawSurface->pixels, drawSurface->pitch);
     SDL_RenderCopy(renderer, drawTexture, NULL, NULL);
     SDL_RenderPresent(renderer);
+}
+
+using namespace std;
+void error(string error_message) {
+	cout << "error: " << error_message << endl;
+	cout << "SDL_GetError(): " << SDL_GetError() << endl;
 }
 
 // set up SDL and related components
@@ -62,23 +65,21 @@ void clean_up() {
 	SDL_Quit();
 }
 
-void renderParallelTriangles(SDL_Surface *drawSurface, Matrix4f *triangleMatrix,
-                             int *screen_dimensions) {
+void renderParallelTriangles(Matrix4f *triangleMatrix, const int *screen_dimensions) {
 	Matrix4f finalTriangles;
 
-	finalTriangles.extend(&triangleMatrix);
+	finalTriangles.extend(triangleMatrix);
 	screenTransform(&finalTriangles, screen_dimensions);
 	drawTriangles(drawSurface, &finalTriangles,
 	              SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff));
 	drawToScreen();
 }
 
-void renderPerspectiveCyclopsTriangles(SDL_Surface *drawSurface,
-                                       Matrix4f *triangleMatrix, float *camera
-                                       int *screen_dimensions) {
+void renderPerspectiveCyclopsTriangles(Matrix4f *triangleMatrix, const float *camera,
+                                       const int *screen_dimensions) {
 	Matrix4f finalTriangles;
 
-	finalTriangles.extend(&triangleMatrix);
+	finalTriangles.extend(triangleMatrix);
 	perspectiveTransform(&finalTriangles, camera);
 	screenTransform(&finalTriangles, screen_dimensions);
 	drawTriangles(drawSurface, &finalTriangles,
@@ -86,9 +87,8 @@ void renderPerspectiveCyclopsTriangles(SDL_Surface *drawSurface,
 	drawToScreen();
 }
 
-void renderPerspectiveStereoTriangles(SDL_Surface *drawSurface,
-                                      Matrix4f *triangleMatrix, float *camera,
-                                      int *screen_dimensions) {
+void renderPerspectiveStereoTriangles(Matrix4f *triangleMatrix, const float *camera,
+                                      const int *screen_dimensions) {
 	Matrix4f finalTriangles;
 	Uint32 pixelColor;
 
@@ -97,12 +97,12 @@ void renderPerspectiveStereoTriangles(SDL_Surface *drawSurface,
 	perspectiveTransform(&finalTriangles, camera);
 	screenTransform(&finalTriangles, screen_dimensions);
 	pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0, 0);
-	drawTriangles(drawSurface, &finalEdges, pixelColor);
+	drawTriangles(drawSurface, &finalTriangles, pixelColor);
 
 	// draw cyan
 	finalTriangles.clear();
-	finalTriangles.extend(&triangleMatrix);
-	perspectiveTransform(&finalTriangles, float_args+3);
+	finalTriangles.extend(triangleMatrix);
+	perspectiveTransform(&finalTriangles, camera + 3);
 	screenTransform(&finalTriangles, screen_dimensions);
 	pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0xff);
 	drawTriangles(drawSurface, &finalTriangles, pixelColor);

@@ -22,6 +22,7 @@ public:
 	void extend(const Matrix4f *);
 	void addCol(Vec4f);
 	void clear();
+	void print();
 	int width;
 private:
 	std::vector<Vec4f> _cols;
