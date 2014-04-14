@@ -338,6 +338,7 @@ void makeSphere(Matrix4f *sphereMatrix) {
 
 	rotatez(&nextSide, M_PI * 2 / SPHERE_LON_LINES);
 	for (int i = 1; i < SPHERE_LAT_LINES-1; i++) {
+		// add body triangles
 		sector.addCol(*(side[i]));
 		sector.addCol(*(side[i+1]));
 		sector.addCol(*(nextSide[i+1]));
@@ -345,6 +346,7 @@ void makeSphere(Matrix4f *sphereMatrix) {
 		sector.addCol(*(nextSide[i]));
 		sector.addCol(*(side[i]));
 	}
+	// prevent cap doubling
 	sector.addCol(*side[0]);
 	sector.addCol(*side[1]);
 	sector.addCol(*nextSide[1]);
