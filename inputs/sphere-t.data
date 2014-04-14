@@ -1,0 +1,7 @@
+# first triangle-sphere test
+screen -3 -2 3 2
+pixels 600 400
+sphere-t 1 1 1 0 0 0 0 0 0
+render-parallel
+file sphere-t.ppm
+end
