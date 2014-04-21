@@ -25,10 +25,24 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	spinDisplayUntilQuit();
+	waitUntilQuit();
+	//spinDisplayUntilQuit();
 
     clean_up();
 	return 0;
+}
+
+void waitUntilQuit() {
+	SDL_Event e;
+	bool quit = false;
+	while (!quit) {
+		while (SDL_PollEvent(&e) != 0) {
+			if (e.type == SDL_QUIT) {
+				quit = true;
+			}
+		}
+		SDL_Delay(10);
+	}
 }
 
 void spinDisplayUntilQuit() {
