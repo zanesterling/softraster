@@ -240,52 +240,52 @@ float dtor(float degrees) {
 
 void makeBox(Matrix4f *boxMatrix) {
 	// front face
-	boxMatrix->addCol(Vec4f(-1, -1, 1, 1));
-	boxMatrix->addCol(Vec4f(1,  -1, 1, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 1, 1));
+	boxMatrix->addCol(Vec4f(1,  0, 1, 1));
 	boxMatrix->addCol(Vec4f(1,  1,  1, 1));
 	boxMatrix->addCol(Vec4f(1,  1,  1, 1));
-	boxMatrix->addCol(Vec4f(-1, 1,  1, 1));
-	boxMatrix->addCol(Vec4f(-1, -1, 1, 1));
+	boxMatrix->addCol(Vec4f(0, 1,  1, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 1, 1));
 
 	// back face
-	boxMatrix->addCol(Vec4f(1,  -1, -1, 1));
-	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
-	boxMatrix->addCol(Vec4f(1,  1,  -1, 1));
-	boxMatrix->addCol(Vec4f(-1, 1,  -1, 1));
-	boxMatrix->addCol(Vec4f(1,  1,  -1, 1));
-	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+	boxMatrix->addCol(Vec4f(1,  0, 0, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 0, 1));
+	boxMatrix->addCol(Vec4f(1,  1,  0, 1));
+	boxMatrix->addCol(Vec4f(0, 1,  0, 1));
+	boxMatrix->addCol(Vec4f(1,  1,  0, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 0, 1));
 
 	// right face
-	boxMatrix->addCol(Vec4f(1, -1, 1,  1));
-	boxMatrix->addCol(Vec4f(1, -1, -1, 1));
-	boxMatrix->addCol(Vec4f(1, 1,  -1, 1));
-	boxMatrix->addCol(Vec4f(1, 1,  -1, 1));
+	boxMatrix->addCol(Vec4f(1, 0, 1,  1));
+	boxMatrix->addCol(Vec4f(1, 0, 0, 1));
+	boxMatrix->addCol(Vec4f(1, 1,  0, 1));
+	boxMatrix->addCol(Vec4f(1, 1,  0, 1));
 	boxMatrix->addCol(Vec4f(1, 1,  1,  1));
-	boxMatrix->addCol(Vec4f(1, -1, 1,  1));
+	boxMatrix->addCol(Vec4f(1, 0, 1,  1));
 
 	// left face
-	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
-	boxMatrix->addCol(Vec4f(-1, -1, 1,  1));
-	boxMatrix->addCol(Vec4f(-1, 1,  -1, 1));
-	boxMatrix->addCol(Vec4f(-1, 1,  -1, 1));
-	boxMatrix->addCol(Vec4f(-1, -1, 1,  1));
-	boxMatrix->addCol(Vec4f(-1, 1,  1,  1));
+	boxMatrix->addCol(Vec4f(0, 0, 0, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 1,  1));
+	boxMatrix->addCol(Vec4f(0, 1,  0, 1));
+	boxMatrix->addCol(Vec4f(0, 1,  0, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 1,  1));
+	boxMatrix->addCol(Vec4f(0, 1,  1,  1));
 
 	// top face
-	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
-	boxMatrix->addCol(Vec4f(1,  -1, -1, 1));
-	boxMatrix->addCol(Vec4f(1,  -1, 1,  1));
-	boxMatrix->addCol(Vec4f(1,  -1, 1,  1));
-	boxMatrix->addCol(Vec4f(-1, -1, 1,  1));
-	boxMatrix->addCol(Vec4f(-1, -1, -1, 1));
+	boxMatrix->addCol(Vec4f(0, 0, 0, 1));
+	boxMatrix->addCol(Vec4f(1,  0, 0, 1));
+	boxMatrix->addCol(Vec4f(1,  0, 1,  1));
+	boxMatrix->addCol(Vec4f(1,  0, 1,  1));
+	boxMatrix->addCol(Vec4f(0, 0, 1,  1));
+	boxMatrix->addCol(Vec4f(0, 0, 0, 1));
 
 	// bottom face
-	boxMatrix->addCol(Vec4f(1,  1, -1, 1));
-	boxMatrix->addCol(Vec4f(-1, 1, -1, 1));
+	boxMatrix->addCol(Vec4f(1,  1, 0, 1));
+	boxMatrix->addCol(Vec4f(0, 1, 0, 1));
 	boxMatrix->addCol(Vec4f(1,  1, 1,  1));
 	boxMatrix->addCol(Vec4f(1,  1, 1,  1));
-	boxMatrix->addCol(Vec4f(-1, 1, -1, 1));
-	boxMatrix->addCol(Vec4f(-1, 1, 1,  1));
+	boxMatrix->addCol(Vec4f(0, 1, 0, 1));
+	boxMatrix->addCol(Vec4f(0, 1, 1,  1));
 }
 
 void makeSphere(Matrix4f *sphereMatrix) {
