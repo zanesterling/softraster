@@ -127,9 +127,9 @@ bool parse(char **argv) {
 			Matrix4f sphere;
 			makeSphere(&sphere);
 			scale(&sphere, float_args[0], float_args[1], float_args[2]);
-			rotatex(&sphere, float_args[3]);
-			rotatey(&sphere, float_args[4]);
-			rotatez(&sphere, float_args[5]);
+			rotatex(&sphere, dtor(float_args[3]));
+			rotatey(&sphere, dtor(float_args[4]));
+			rotatez(&sphere, dtor(float_args[5]));
 			translate(&sphere, float_args[6], float_args[7], float_args[8]);
 			sphere.transform(&transformMatrix);
 			triangleMatrix.extend(&sphere);
@@ -138,9 +138,9 @@ bool parse(char **argv) {
 			Matrix4f box;
 			makeBox(&box);
 			scale(&box, float_args[0], float_args[1], float_args[2]);
-			rotatex(&box, float_args[3]);
-			rotatey(&box, float_args[4]);
-			rotatez(&box, float_args[5]);
+			rotatex(&box, dtor(float_args[3]));
+			rotatey(&box, dtor(float_args[4]));
+			rotatez(&box, dtor(float_args[5]));
 			translate(&box, float_args[6], float_args[7], float_args[8]);
 			box.transform(&transformMatrix);
 			triangleMatrix.extend(&box);
