@@ -332,11 +332,11 @@ void makeSphere(Matrix4f *sphereMatrix) {
 
 	for (int i = 0; i <= SPHERE_LAT_LINES; i++) {
 		float angle = M_PI * i / SPHERE_LAT_LINES;
-		side.addCol(Vec4f(sin(angle), -cos(angle), 0, 1));
+		side.addCol(Vec4f(sin(angle), 0, -cos(angle), 1));
 		nextSide.addCol(*(side[i]));
 	}
 
-	rotatey(&nextSide, M_PI * 2 / SPHERE_LON_LINES);
+	rotatez(&nextSide, M_PI * 2 / SPHERE_LON_LINES);
 	for (int i = 0; i < SPHERE_LON_LINES; i++) {
 		sector.addCol(*(side[i]));
 		sector.addCol(*(side[i+1]));
@@ -348,6 +348,6 @@ void makeSphere(Matrix4f *sphereMatrix) {
 
 	for (int i = 0; i < SPHERE_LON_LINES; i++) {
 		sphereMatrix->extend(&sector);
-		rotatey(&sector, M_PI * 2 / SPHERE_LON_LINES);
+		rotatez(&sector, M_PI * 2 / SPHERE_LON_LINES);
 	}
 }
