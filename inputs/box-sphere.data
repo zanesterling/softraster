@@ -1,11 +1,10 @@
-# first sphere test
+# object3d commands test (corrected)
 screen -3 -2 3 2
 pixels 600 400
 rotate-y 40
 rotate-x 20
-sphere-t 1 1 1 0 0 0 0 0 0
-box-t 1 1 1 0 0 0 -1.5 0 0
+sphere-t 1 1 1  0 0 0 1 0 0
+box-t 1 1 1 0 0 0 -1 -0.5 -1
 render-parallel
-#render-perspective-cyclops 0 0 4
 file box-sphere.ppm
 end
