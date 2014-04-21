@@ -25,6 +25,13 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	spinDisplayUntilQuit();
+
+    clean_up();
+	return 0;
+}
+
+void spinDisplayUntilQuit() {
 	SDL_Event e;
 	bool quit = false;
 	while (!quit) {
@@ -68,10 +75,6 @@ int main(int argc, char **argv) {
 		drawToScreen();
 		SDL_Delay(10);
 	}
-    //SDL_Delay(4000);
-
-    clean_up();
-    return 0;
 }
 
 bool parse(char **argv) {

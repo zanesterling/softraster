@@ -11,6 +11,7 @@
 
 void usage(char **);
 bool parse(char **);
+void spinDisplayUntilQuit();
 bool getLine(FILE *, char *, char **, float *);
 float dtor(float); // degrees to radians
 void makeBox(Matrix4f *triangleMatrix);
