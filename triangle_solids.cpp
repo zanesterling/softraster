@@ -234,6 +234,22 @@ bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_bu
 		}
 	}
 
+	for (i = 0; command_buffer[i] != '\0'; i++) {
+		if (command_buffer[i] == '\r') {
+			command_buffer[i] = '\0';
+			break;
+		}
+	}
+
+	for (j = 0; j < args_index; j++) {
+		for (i = 0; args_buffer[j][i] != '\0'; i++) {
+			if (args_buffer[j][i] == '\r') {
+				args_buffer[j][i] = '\0';
+				break;
+			}
+		}
+	}
+
 	return true;
 }
 
