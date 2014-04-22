@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	waitUntilQuit();
-	//spinDisplayUntilQuit();
+	//waitUntilQuit();
+	spinDisplayUntilQuit();
 
     clean_up();
 	return 0;
@@ -337,7 +337,7 @@ void makeSphere(Matrix4f *sphereMatrix) {
 	}
 
 	rotatez(&nextSide, M_PI * 2 / SPHERE_LON_LINES);
-	for (int i = 0; i < SPHERE_LON_LINES; i++) {
+	for (int i = 1; i < SPHERE_LAT_LINES-1; i++) {
 		sector.addCol(*(side[i]));
 		sector.addCol(*(side[i+1]));
 		sector.addCol(*(nextSide[i+1]));
@@ -345,6 +345,12 @@ void makeSphere(Matrix4f *sphereMatrix) {
 		sector.addCol(*(nextSide[i]));
 		sector.addCol(*(side[i]));
 	}
+	sector.addCol(*side[0]);
+	sector.addCol(*side[1]);
+	sector.addCol(*nextSide[1]);
+	sector.addCol(*nextSide[SPHERE_LAT_LINES-1]);
+	sector.addCol(*side[SPHERE_LAT_LINES-1]);
+	sector.addCol(*side[SPHERE_LAT_LINES]);
 
 	for (int i = 0; i < SPHERE_LON_LINES; i++) {
 		sphereMatrix->extend(&sector);
