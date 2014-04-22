@@ -69,8 +69,8 @@ void renderParallelTriangles(Matrix4f *triangleMatrix, const int *screen_dimensi
 	Matrix4f finalTriangles;
 
 	finalTriangles.extend(triangleMatrix);
-	bool *shouldDraw = new bool[finalTriangles.width / 3];
 	float camera[3] = {0, 0, -100};
+	bool *shouldDraw = new bool[finalTriangles.width / 3];
 	backfaceCull(&finalTriangles, camera, shouldDraw);
 	screenTransform(&finalTriangles, screen_dimensions);
 	Uint32 pixel = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
@@ -83,10 +83,12 @@ void renderPerspectiveCyclopsTriangles(Matrix4f *triangleMatrix, const float *ca
 	Matrix4f finalTriangles;
 
 	finalTriangles.extend(triangleMatrix);
+	bool *shouldDraw = new bool[finalTriangles.width / 3];
+	backfaceCull(&finalTriangles, camera, shouldDraw);
 	perspectiveTransform(&finalTriangles, camera);
 	screenTransform(&finalTriangles, screen_dimensions);
-	drawTriangles(drawSurface, &finalTriangles,
-	              SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff));
+	Uint32 pixel = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
+	drawTheseTriangles(drawSurface, &finalTriangles, pixel, shouldDraw);
 	drawToScreen();
 }
 
@@ -97,10 +99,12 @@ void renderPerspectiveStereoTriangles(Matrix4f *triangleMatrix, const float *cam
 
 	// draw red
 	finalTriangles.extend(triangleMatrix);
+	bool *shouldDraw = new bool[finalTriangles.width / 3];
+	backfaceCull(&finalTriangles, camera, shouldDraw);
 	perspectiveTransform(&finalTriangles, camera);
 	screenTransform(&finalTriangles, screen_dimensions);
 	pixelColor = SDL_MapRGB(drawSurface->format, 0xff, 0, 0);
-	drawTriangles(drawSurface, &finalTriangles, pixelColor);
+	drawTheseTriangles(drawSurface, &finalTriangles, pixelColor, shouldDraw);
 
 	// draw cyan
 	finalTriangles.clear();
@@ -108,6 +112,6 @@ void renderPerspectiveStereoTriangles(Matrix4f *triangleMatrix, const float *cam
 	perspectiveTransform(&finalTriangles, camera + 3);
 	screenTransform(&finalTriangles, screen_dimensions);
 	pixelColor = SDL_MapRGB(drawSurface->format, 0, 0xff, 0xff);
-	drawTriangles(drawSurface, &finalTriangles, pixelColor);
+	drawTheseTriangles(drawSurface, &finalTriangles, pixelColor, shouldDraw);
 	drawToScreen();
 }
