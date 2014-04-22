@@ -1,0 +1,8 @@
+# total boxxage going on here
+screen -4 -3 4 3
+pixels 640 480
+rotate-y 40
+rotate-x 20
+box-t 2 2 2 0 0 0 -0.5 -0.5 -0.5
+render-parallel
+end

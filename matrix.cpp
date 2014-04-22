@@ -91,3 +91,18 @@ float& Vec4f::operator [](const int i) {
 void Vec4f::operator =(const Vec4f *v) {
 	memcpy(this->_data, v->_data, sizeof(float)*4);
 }
+
+float Vec4f::dot(const Vec4f &v) {
+	float x = 0;
+	for (int i = 0; i < 4; i++) x += this->_data[i] * v[i];
+	return x;
+}
+
+Vec4f Vec4f::cross(const Vec4f &v) {
+	Vec4f res;
+	res[0] = this->_data[1] * v[2] - this->_data[2] * v[1];
+	res[1] = this->_data[2] * v[0] - this->_data[0] * v[2];
+	res[2] = this->_data[0] * v[1] - this->_data[1] * v[0];
+	res[3] = 1;
+	return res;
+}

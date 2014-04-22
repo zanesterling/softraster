@@ -310,3 +310,34 @@ void drawTriangles(SDL_Surface *drawSurface, const Matrix4f *triangleMatrix,
 		           pixel);
 	}
 }
+
+void drawTheseTriangles(SDL_Surface * drawSurface, const Matrix4f *triMatrix,
+                        const Uint32 pixel, const bool *shouldDraw) {
+	for (int i = 0; i < triMatrix->width; i += 3) {
+		if (shouldDraw[i/3]) {
+			drawLine2v(drawSurface, (*triMatrix)[i],   (*triMatrix)[i+1], pixel);
+			drawLine2v(drawSurface, (*triMatrix)[i+1], (*triMatrix)[i+2], pixel);
+			drawLine2v(drawSurface, (*triMatrix)[i+2], (*triMatrix)[i],   pixel);
+		}
+	}
+}
+
+void backfaceCull(const Matrix4f *triMatrix, const float *camera, bool *shouldDraw) {
+	for (int i = 0; i < triMatrix->width; i += 3) {
+		Vec4f t1, t2, s;
+		t1[0] = triMatrix->get(i+1, 0) - triMatrix->get(i, 0);
+		t1[1] = triMatrix->get(i+1, 1) - triMatrix->get(i, 1);
+		t1[2] = triMatrix->get(i+1, 2) - triMatrix->get(i, 2);
+
+		t2[0] = triMatrix->get(i+2, 0) - triMatrix->get(i+1, 0);
+		t2[1] = triMatrix->get(i+2, 1) - triMatrix->get(i+1, 1);
+		t2[2] = triMatrix->get(i+2, 2) - triMatrix->get(i+1, 2);
+
+		s[0] =  triMatrix->get(i,   0) - camera[0];
+		s[1] =  triMatrix->get(i,   1) - camera[1];
+		s[2] =  triMatrix->get(i,   2) - camera[2];
+
+		float d = s.dot(t1.cross(t2));
+		shouldDraw[i/3] = (d < 0);
+	}
+}

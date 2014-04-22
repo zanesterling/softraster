@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	waitUntilQuit();
-	//spinDisplayUntilQuit();
+	//waitUntilQuit();
+	spinDisplayUntilQuit();
 
     clean_up();
 	return 0;

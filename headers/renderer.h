@@ -33,5 +33,7 @@ void fillCol(SDL_Surface *, const int, const int, const int, const Uint32);
 void drawRect(SDL_Surface *, int, int, int, int, const Uint32);
 
 void drawTriangles(SDL_Surface *, const Matrix4f *, const Uint32);
+void drawTheseTriangles(SDL_Surface *, const Matrix4f *, const Uint32, const bool *);
+void backfaceCull(const Matrix4f *, const float *, bool *);
 
 #endif

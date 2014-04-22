@@ -69,9 +69,12 @@ void renderParallelTriangles(Matrix4f *triangleMatrix, const int *screen_dimensi
 	Matrix4f finalTriangles;
 
 	finalTriangles.extend(triangleMatrix);
+	bool *shouldDraw = new bool[finalTriangles.width / 3];
+	float camera[3] = {0, 0, -100};
+	backfaceCull(&finalTriangles, camera, shouldDraw);
 	screenTransform(&finalTriangles, screen_dimensions);
-	drawTriangles(drawSurface, &finalTriangles,
-	              SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff));
+	Uint32 pixel = SDL_MapRGB(drawSurface->format, 0xff, 0xff, 0xff);
+	drawTheseTriangles(drawSurface, &finalTriangles, pixel, shouldDraw);
 	drawToScreen();
 }
 

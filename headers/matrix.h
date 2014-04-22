@@ -37,6 +37,8 @@ public:
 	float  operator [](const int) const;
 	float& operator [](const int);
 	void operator =(const Vec4f *);
+	float dot  (const Vec4f &);
+	Vec4f cross(const Vec4f &);
 private:
 	float _data[4];
 };
