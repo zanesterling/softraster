@@ -25,8 +25,8 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//waitUntilQuit();
-	spinDisplayUntilQuit();
+	waitUntilQuit();
+	//spinDisplayUntilQuit();
 
     clean_up();
 	return 0;
@@ -74,7 +74,7 @@ void spinDisplayUntilQuit() {
 		// rotate the model slightly around its center
 		translate(&triangleMatrix, -avgX, -avgY, -avgZ);
 		rotatex(&triangleMatrix, 0.02);
-		rotatey(&triangleMatrix, 0.02);
+		rotatey(&triangleMatrix, 0.03);
 		translate(&triangleMatrix, avgX, avgY, avgZ);
 
 		if (render_type == RENDER_PAR) {
