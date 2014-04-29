@@ -8,5 +8,5 @@ identity
 pop
 box-t 2 2 2 0 0 0 -0.5 -0.5 -0.5
 render-parallel
-file stack.data
+file stack.ppm
 end
