@@ -6,4 +6,5 @@ rotate-x 20
 box-t 2 2 2 0 0 0 0 0 0
 #render-parallel
 render-perspective-cyclops 0 0 -100
+file box-t.data
 end

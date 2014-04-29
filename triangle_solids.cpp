@@ -93,6 +93,7 @@ void spinDisplayUntilQuit() {
 
 bool parse(char **argv) {
 	Matrix4f transformMatrix;
+	stack<Matrix4f> transformStack;
 	char command[64];
 	char **str_args;
 	float float_args[16];
@@ -132,10 +133,17 @@ bool parse(char **argv) {
 		} else if (strcmp(command, "rotate-z") == 0) {
 			// rotate about the z-axis
 			rotatez(&transformMatrix, dtor(float_args[0]));
-		} else if (strcmp(command, "push") == 0) { // TODO
+		} else if (strcmp(command, "push") == 0) {
 			// push the current transformation (matrix?) to the stack
-		} else if (strcmp(command, "pop") == 0) { // TODO
+			transformStack.push(transformMatrix);
+		} else if (strcmp(command, "pop") == 0) {
 			// pop a transformation matrix from the stack and make it current
+			if (transformStack.empty()) {
+				cout << "request to pop empty transform stack\n";
+				return false;
+			}
+			transformMatrix = transformStack.top();
+			transformStack.pop();
 		} else if (strcmp(command, "sphere-t") == 0) {
 			// compose a sphere made from triangles, then scale, rotate, and move it
 			Matrix4f sphere;
