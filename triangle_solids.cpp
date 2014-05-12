@@ -25,24 +25,25 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	//waitUntilQuit();
-	spinDisplayUntilQuit();
+	waitUntilQuit();
+	//spinDisplayUntilQuit();
 
     clean_up();
 	return 0;
 }
 
 void waitUntilQuit() {
+	while (processEvents()) SDL_Delay(10);
+}
+
+bool processEvents() {
 	SDL_Event e;
-	bool quit = false;
-	while (!quit) {
-		while (SDL_PollEvent(&e) != 0) {
-			if (e.type == SDL_QUIT) {
-				quit = true;
-			}
+	while (SDL_PollEvent(&e) != 0) {
+		if (e.type == SDL_QUIT) {
+			return true;
 		}
-		SDL_Delay(10);
 	}
+	return false;
 }
 
 void spinDisplayUntilQuit() {
@@ -94,10 +95,13 @@ void spinDisplayUntilQuit() {
 bool parse(char **argv) {
 	Matrix4f transformMatrix;
 	stack<Matrix4f> transformStack;
+	map<string, Vec4f> var_args;
+	map<string, Matrix4f> savedSystems;
 	char command[64];
 	char **str_args;
 	float float_args[16];
-	int frame_count = 0;
+	int max_frames, cur_frame = -1;
+	FILE *fp;
 
 	str_args = (char **) malloc(sizeof(char *) * 4);
     for (int i = 0; i < 4; i++) {
@@ -110,10 +114,16 @@ bool parse(char **argv) {
 	transformMatrix.addCol(Vec4f(0, 0, 1, 0));
 	transformMatrix.addCol(Vec4f(0, 0, 0, 1));
 
-	FILE *fp = fopen(argv[1], "r");
+	fp = fopen(argv[1], "r");
+	if (fp == NULL) {
+		cout << "no such input file\n";
+		return false;
+	}
+
 	cout << "parsing\n";
-	while (getLine(fp, command, str_args, float_args)) {
-		cout << command << endl;
+	while (getLine(fp, &var_args, cur_frame, command, str_args, float_args)) {
+		if (processEvents()) return true;
+		//cout << command << endl;
 		if (strcmp(command, "identity") == 0) {
 			transformMatrix.clear();
 			transformMatrix.addCol(Vec4f(1, 0, 0, 0));
@@ -173,15 +183,18 @@ bool parse(char **argv) {
 			screen_dimensions[4] = float_args[2];
 			screen_dimensions[5] = float_args[3];
 		} else if (strcmp(command, "pixels") == 0) {
-			// initialize the surface
-			screen_dimensions[0] = float_args[0];
-			screen_dimensions[1] = float_args[1];
-			for (int i = 0; i < 6; i++)
-				cout << screen_dimensions[i] << " ";
-			cout << endl;
-			if (!init(float_args[0], float_args[1])) {
-				error("parser could not init");
-				return false;
+			if (window == NULL) {
+				// initialize the surface
+				screen_dimensions[0] = float_args[0];
+				screen_dimensions[1] = float_args[1];
+				/*for (int i = 0; i < 6; i++) {
+					cout << screen_dimensions[i] << " ";
+				}
+				cout << endl;*/
+				if (!init(float_args[0], float_args[1])) {
+					error("parser could not init");
+					return false;
+				}
 			}
 		} else if (strcmp(command, "render-parallel") == 0) {
 			// perform a parellel projection along the z-axis
@@ -211,11 +224,37 @@ bool parse(char **argv) {
 			savePPM(drawSurface, str_args[0]);
 		} else if (strcmp(command, "files") == 0) { // TODO
 			// save a frame
-			sprintf(str_args[0] + strlen(str_args[0]), "%s%02i",
-			        str_args[0], frame_count++);
+		} else if (strcmp(command, "save") == 0) {
+			savedSystems[string(str_args[0])] = transformMatrix;
+		} else if (strcmp(command, "restore") == 0) {
+			transformMatrix.clear();
+			transformMatrix.extend(&savedSystems[string(str_args[0])]);
+		} else if (strcmp(command, "vary") == 0) {
+			if (var_args.find(string(str_args[0])) == var_args.end()) {
+				var_args[string(str_args[0])] = Vec4f(float_args);
+			}
+		} else if (strcmp(command, "frames") == 0) {
+			if (cur_frame == -1) {
+				cur_frame  = float_args[0];
+				max_frames = float_args[1];
+			}
 		} else if (strcmp(command, "end") == 0) {
 			// stop parsing
-			return true;
+			if (cur_frame >= max_frames) {
+				cur_frame = 1;
+			} else if (cur_frame == -1) {
+				return true;
+			} else {
+				cur_frame++;
+			}
+			rewind(fp);
+			triangleMatrix.clear();
+			transformMatrix.clear();
+			transformMatrix.addCol(Vec4f(1, 0, 0, 0));
+			transformMatrix.addCol(Vec4f(0, 1, 0, 0));
+			transformMatrix.addCol(Vec4f(0, 0, 1, 0));
+			transformMatrix.addCol(Vec4f(0, 0, 0, 1));
+			SDL_FillRect(drawSurface, NULL, 0x000000);
 		}
 	}
 }
@@ -225,7 +264,8 @@ void usage(char **argv) {
     cout << argv[0] << " inputfile\n";
 }
 
-bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_buffer) {
+bool getLine(FILE *fin, map<string, Vec4f> *var_args, int frame,
+             char *command_buffer, char **args_buffer, float *vals_buffer) {
 	int args_index, vals_index;
 	int i, j, c;
 	char fvals[16];
@@ -254,8 +294,16 @@ bool getLine(FILE *fin, char *command_buffer, char **args_buffer, float *vals_bu
 			fvals[0] == '-') {
 			vals_buffer[vals_index++] = atof(fvals);
 		} else {
-			// otherwise put it in args_buffer
-			strcpy(args_buffer[args_index++], fvals);
+			if (var_args->find(string(fvals)) != var_args->end()) {
+				// if it's a recognized var, convert it into vals buffer
+				Vec4f v = (*var_args)[string(fvals)];
+				float val = v[0] + (v[1] - v[0]) / (v[3] - v[2] + 1) * (frame - v[2]);
+				//if (strcmp(fvals, "rx") == 0) cout << val << " " << vals_index << endl;
+				vals_buffer[vals_index++] = val;
+			} else {
+				// otherwise put it in args_buffer
+				strcpy(args_buffer[args_index++], fvals);
+			}
 		}
 	}
 
