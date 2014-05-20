@@ -2,7 +2,7 @@
 #define TRANSFORM
 
 #include "matrix.h"
-#include "math.h"
+#include <math.h>
 
 void translate(Matrix4f *, const float, const float, const float);
 void scale(Matrix4f *, const float, const float, const float);
