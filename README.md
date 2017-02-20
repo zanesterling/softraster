@@ -1,4 +1,4 @@
-rendering-engine-cpp
+soft-raster
 ====================
 
 A rendering engine built from scratch in C++.
